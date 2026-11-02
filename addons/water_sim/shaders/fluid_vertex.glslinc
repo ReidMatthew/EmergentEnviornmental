@@ -1,0 +1,81 @@
+// A particle as one camera-facing triangle round its square, instanced: three vertices an instance, no vertex buffer. Needs
+// fluid_shape.glslinc.
+layout(set = 0, binding = 0, std430) readonly buffer Points {
+	uvec2 point[];
+} pts;
+
+layout(location = 0) out vec2 v_uv;
+layout(location = 1) out float v_view_z;
+layout(location = 2) out flat int v_substance;
+layout(location = 3) out float v_radius;
+// A disc's axis in the camera's space (zero: not a disc).
+layout(location = 4) out flat vec3 v_axis;
+
+// The right-angled triangle that covers the square (u.light.w 1).
+const vec2 TRIANGLE[3] = vec2[](vec2(-1.0, -1.0), vec2(3.0, -1.0), vec2(-1.0, 3.0));
+
+// Or the smallest triangle that covers it (u.light.w 2; an equilateral one round the circle: 5.2 of the circle's radius squared
+// against 8 for the right-angled one. A quad, 4, measured no faster).
+const vec2 EQUILATERAL[3] = vec2[](vec2(0.0, 2.0), vec2(-1.7320508, -1.0), vec2(1.7320508, -1.0));
+
+void main() {
+	uvec2 q = pts.point[gl_InstanceIndex];
+	// The substance, and 256 times the detail level: a coarse particle stands for eight fine ones, a cell wide instead of half.
+	const int packed = int(q.y >> 16);
+	v_substance = packed & 63;
+	v_radius = ms_radius(packed);
+	vec3 place = vec3(float(q.x & 0xFFFFu), float(q.x >> 16), float(q.y & 0xFFFFu)) * u.extent.xyz;
+	vec3 view = (u.view_from_solver * vec4(ms_anchored(place, v_radius), 1.0)).xyz;
+	vec2 corner = u.light.w > 1.5 ? EQUILATERAL[gl_VertexIndex % 3] : TRIANGLE[gl_VertexIndex % 3];
+	v_view_z = -view.z;
+	v_axis = mat3(u.view_from_solver) * ms_face_camera(ms_disc_axis(q), place);
+	// A disc seen at an angle covers an ellipse, not the square of its widest radius: semi-axis 1 across the tilt and `squash` along it
+	// (an oblate spheroid under a parallel view), so the corners go on that ellipse's frame and the pixels outside it are never shaded.
+	vec2 across = vec2(1.0, 0.0), along = vec2(0.0, 1.0);
+	float squash = 1.0;
+	if (ms_shape() > 1.5 && dot(v_axis, v_axis) > 0.0) {
+		vec3 n = normalize(v_axis);
+		squash = sqrt(MS_DISC_FLAT * MS_DISC_FLAT + (1.0 - MS_DISC_FLAT * MS_DISC_FLAT) * n.z * n.z);
+		float tilt = length(n.xy);
+		if (tilt > 1e-4) {
+			along = n.xy / tilt;
+			across = vec2(-along.y, along.x);
+		}
+	}
+	v_uv = corner.x * across + corner.y * squash * along;
+	float bound = ms_bound(v_radius, v_axis);
+	// Thickness only (an inside particle of deep water, thinned out): nothing for the depth pass, which defines SKIP_THIN.
+	#ifdef SKIP_THIN
+	if ((packed & 0x8000) != 0) {
+		gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+		return;
+	}
+	#endif
+	// Behind the camera, or the square would be turned inside out, or room a block of the solver's own points didn't use (no
+	// particle has that word): nothing.
+	if (view.z > -bound || packed == 0xFFFF) {
+		gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+		return;
+	}
+	if (u.extra.y > 0.5) {
+		gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+		return;
+	}
+	// Particles smaller on screen than u.extra.z pixels across (radius) are left to the compute rasterizer (fluid_raster.glsl).
+	#ifdef SKIP_SMALL
+	if (v_radius * abs(u.proj[1][1]) * 0.5 * u.screen.y / -view.z < u.extra.z) {
+		gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+		return;
+	}
+	#endif
+	gl_Position = u.proj * vec4(view + vec3(v_uv * bound, 0.0), 1.0);
+	// The triangle flat at the particle's nearest point, as a fraction of the far limit with the substance in the low mantissa bits
+	// (bits 4-9, bit 3 set, so an interpolation a few units off in the last place keeps it): the depth test then runs before the fragment
+	// shader and throws away the hidden particles' pixels, which writing gl_FragDepth stopped (3.1 to 0.7 ms). The smoothing rounds it.
+	#ifdef FRONT_DEPTH
+	float enter, leave;
+	ms_hit(vec2(0.0), v_radius, v_axis, enter, leave);
+	float d = clamp((v_view_z + enter) / u.sizes.y, 0.0, 0.999);
+	gl_Position.z = uintBitsToFloat((floatBitsToUint(d) & ~0x3FFu) | (uint(v_substance & 63) << 4) | 8u) * gl_Position.w;
+	#endif
+}

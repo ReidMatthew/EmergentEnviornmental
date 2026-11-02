@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://qbxwj8soshqj"
+path="res://.godot/imported/indirect.glsl-a8ffc678e3d4ba9968cc8d335bcd2e94.res"
+
+[deps]
+
+source_file="res://addons/meshers/marching_cubes/gpu/indirect.glsl"
+dest_files=["res://.godot/imported/indirect.glsl-a8ffc678e3d4ba9968cc8d335bcd2e94.res"]
+
+[params]
+

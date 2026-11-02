@@ -1,0 +1,150 @@
+// Marching cubes helpers shared by the GPU shaders, so every backend computes the same
+// vertices and triangles. The including shader must first declare:
+//   buffer values_raw[] (uint: float bits, or four bytes per uint), materials[] (uint,
+//   four ids per uint), tri_table[] (int)
+//   push constant `params` with ivec4 size (w: has materials), cell_end (xyz), vec4 origin
+//   (w: spacing) and vec4 misc (x: iso level, y: 1 if samples are bytes, z: byte center,
+//   w: byte scale; see MesherGrid.bytes)
+//   int transition_faces() and float transition_width(): MesherGrid.transitions as a face
+//   bit mask, and MesherGrid.transition_width
+// Corner/edge numbering matches MarchingCubesTables.
+
+const ivec3 CORNERS[8] = ivec3[8](
+	ivec3(0, 0, 0), ivec3(1, 0, 0), ivec3(1, 0, 1), ivec3(0, 0, 1),
+	ivec3(0, 1, 0), ivec3(1, 1, 0), ivec3(1, 1, 1), ivec3(0, 1, 1));
+const ivec3 EDGE_ORIGIN[12] = ivec3[12](
+	ivec3(0, 0, 0), ivec3(1, 0, 0), ivec3(0, 0, 1), ivec3(0, 0, 0),
+	ivec3(0, 1, 0), ivec3(1, 1, 0), ivec3(0, 1, 1), ivec3(0, 1, 0),
+	ivec3(0, 0, 0), ivec3(1, 0, 0), ivec3(1, 0, 1), ivec3(0, 0, 1));
+const int EDGE_AXIS[12] = int[12](0, 2, 0, 2, 0, 2, 0, 2, 1, 1, 1, 1);
+
+int index_of(ivec3 p) {
+	return p.x + params.size.x * (p.y + params.size.y * p.z);
+}
+
+float sample_value(int i) {
+	if (params.misc.y != 0.0) {
+		uint b = (values_raw[i >> 2] >> ((i & 3) * 8)) & 0xFFu;
+		return (float(b) - params.misc.z) * params.misc.w;
+	}
+	return uintBitsToFloat(values_raw[i]);
+}
+
+float value_at(ivec3 p) {
+	return sample_value(index_of(p));
+}
+
+// Central difference, one-sided at the grid border (same as the CPU mesher).
+float diff(ivec3 p, int axis) {
+	ivec3 d = ivec3(0);
+	d[axis] = 1;
+	if (p[axis] <= 0) {
+		return value_at(p + d) - value_at(p);
+	}
+	if (p[axis] >= params.size[axis] - 1) {
+		return value_at(p) - value_at(p - d);
+	}
+	return (value_at(p + d) - value_at(p - d)) * 0.5;
+}
+
+vec3 gradient(ivec3 p) {
+	return vec3(diff(p, 0), diff(p, 1), diff(p, 2));
+}
+
+uint material_at(int i) {
+	return (materials[i >> 2] >> ((i & 3) * 8)) & 0xFFu;
+}
+
+// Unique id of the grid edge from sample p along axis.
+int edge_key(ivec3 p, int axis) {
+	return index_of(p) * 3 + axis;
+}
+
+int cell_edge_key(ivec3 cell, int edge) {
+	return edge_key(cell + EDGE_ORIGIN[edge], EDGE_AXIS[edge]);
+}
+
+// Squeezes grid-space position pos of the vertex on the edge from sample pa along axis away
+// from the transition faces (MarchingCubesCpuMesher.squeeze): within a cell of such a
+// face it moves into the part of the cell the transition cells leave. Vertices on a
+// boundary face without transition cells stay put.
+vec3 squeeze(vec3 pos, ivec3 pa, int axis) {
+	int faces = transition_faces();
+	if (faces == 0) {
+		return pos;
+	}
+	for (int b = 0; b < 3; b++) {
+		if (b == axis) {
+			continue;
+		}
+		if ((pa[b] == params.cell_begin[b] && (faces & (1 << (b * 2))) == 0)
+				|| (pa[b] == params.cell_end[b] && (faces & (2 << (b * 2))) == 0)) {
+			return pos;
+		}
+	}
+	float w = transition_width();
+	vec3 q = pos;
+	for (int a = 0; a < 3; a++) {
+		float begin = float(params.cell_begin[a]);
+		float end = float(params.cell_end[a]);
+		if ((faces & (1 << (a * 2))) != 0 && pos[a] < begin + 1.0) {
+			q[a] = begin + w + (pos[a] - begin) * (1.0 - w);
+		} else if ((faces & (2 << (a * 2))) != 0 && pos[a] > end - 1.0) {
+			q[a] = end - w - (end - pos[a]) * (1.0 - w);
+		}
+	}
+	return q;
+}
+
+// The vertex where the surface crosses the edge from sample p along axis. Returns false
+// when the edge is outside the cell range or not crossed.
+bool crossing(ivec3 p, int axis, out vec3 position, out vec3 normal, out uint material) {
+	position = vec3(0.0);
+	normal = vec3(0.0, 1.0, 0.0);
+	material = 0u;
+	if (p[axis] >= params.cell_end[axis]) {
+		return false;
+	}
+	float iso = params.misc.x;
+	int a = index_of(p);
+	float va = sample_value(a);
+	ivec3 q = p;
+	q[axis] += 1;
+	int b = index_of(q);
+	float vb = sample_value(b);
+	if ((va < iso) == (vb < iso)) {
+		return false;
+	}
+	float f = va == vb ? 0.5 : (iso - va) / (vb - va);
+	position = vec3(p);
+	position[axis] += f;
+	position = params.origin.xyz + squeeze(position, p, axis) * params.origin.w;
+	vec3 n = mix(gradient(p), gradient(q), f);
+	normal = dot(n, n) > 0.0 ? normalize(n) : vec3(0.0, 1.0, 0.0);
+	if (params.size.w != 0) {
+		material = material_at(va < iso ? a : b);
+	}
+	return true;
+}
+
+// Marching cubes case of a cell (bit k set when corner k is inside).
+int cube_index(ivec3 c) {
+	float iso = params.misc.x;
+	int cube = 0;
+	for (int k = 0; k < 8; k++) {
+		if (value_at(c + CORNERS[k]) < iso) {
+			cube |= 1 << k;
+		}
+	}
+	return cube;
+}
+
+// Number of tri_table entries (three per triangle) for a case.
+int case_entry_count(int cube) {
+	int t = cube * 16;
+	int count = 0;
+	while (count < 15 && tri_table[t + count] != -1) {
+		count++;
+	}
+	return count;
+}

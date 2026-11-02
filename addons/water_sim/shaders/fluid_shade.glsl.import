@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://cb68xhlhlmtkv"
+path="res://.godot/imported/fluid_shade.glsl-1fef4d7cb2bbb5e921df4cf5e137321d.res"
+
+[deps]
+
+source_file="res://addons/water_sim/shaders/fluid_shade.glsl"
+dest_files=["res://.godot/imported/fluid_shade.glsl-1fef4d7cb2bbb5e921df4cf5e137321d.res"]
+
+[params]
+

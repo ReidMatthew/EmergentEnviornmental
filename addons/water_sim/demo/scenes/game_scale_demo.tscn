@@ -1,0 +1,213 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://addons/water_sim/demo/props/box.tscn" id="1_box"]
+[ext_resource type="Script" path="res://addons/water_sim/demo/components/orbit_camera.gd" id="2_camera"]
+[ext_resource type="Material" path="res://addons/water_sim/demo/materials/grass.tres" id="3_grass"]
+[ext_resource type="Material" path="res://addons/water_sim/demo/materials/stone.tres" id="4_stone"]
+[ext_resource type="Script" path="res://addons/water_sim/components/collider.gd" id="5_collider"]
+[ext_resource type="Script" path="res://addons/water_sim/components/emitter.gd" id="6_emitter"]
+[ext_resource type="Script" path="res://addons/water_sim/components/recycler.gd" id="7_recycler"]
+[ext_resource type="Resource" path="res://addons/water_sim/substances/water.tres" id="8_water"]
+[ext_resource type="PackedScene" path="res://addons/water_sim/demo/assets/choral/Choral.glb" id="11_choral"]
+[ext_resource type="Script" path="res://addons/water_sim/views/lod_view.gd" id="12_lod_view"]
+[ext_resource type="Script" path="res://addons/water_sim/demo/components/pull_tool.gd" id="15_pull"]
+[ext_resource type="PackedScene" path="res://addons/water_sim/demo/ui/demo_hud.tscn" id="hud_scene"]
+
+[sub_resource type="Environment" id="Environment_sky"]
+background_mode = 1
+background_color = Color(0.6, 0.78, 0.92, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.55, 0.6, 0.7, 1)
+ambient_light_energy = 0.6
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_ground"]
+material = ExtResource("3_grass")
+size = Vector2(120, 120)
+
+[sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_ground"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_floor"]
+size = Vector3(16, 0.4, 16)
+
+[sub_resource type="BoxMesh" id="BoxMesh_floor"]
+material = ExtResource("4_stone")
+size = Vector3(16, 0.4, 16)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_bank_ns"]
+size = Vector3(16, 2.45, 2)
+
+[sub_resource type="BoxMesh" id="BoxMesh_bank_ns"]
+material = ExtResource("4_stone")
+size = Vector3(16, 2.45, 2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_bank_ew"]
+size = Vector3(2, 2.45, 12)
+
+[sub_resource type="BoxMesh" id="BoxMesh_bank_ew"]
+material = ExtResource("4_stone")
+size = Vector3(2, 2.45, 12)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_cliff"]
+size = Vector3(16, 5.25, 2)
+
+[sub_resource type="BoxMesh" id="BoxMesh_cliff"]
+material = ExtResource("4_stone")
+size = Vector3(16, 5.25, 2)
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_choral"]
+radius = 0.25
+height = 1.6
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_glass"]
+size = Vector3(16, 4.8, 0.25)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_step"]
+size = Vector3(3, 0.85, 3)
+
+[sub_resource type="BoxMesh" id="BoxMesh_step"]
+material = ExtResource("4_stone")
+size = Vector3(3, 0.85, 3)
+
+[node name="WaterGameScale" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_sky")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.81915206, -0.46984634, 0.32898995, 0, 0.57357645, 0.81915206, -0.57357645, -0.6710101, 0.46984634, 0, 0, 0)
+shadow_enabled = true
+
+[node name="Camera" type="Camera3D" parent="."]
+script = ExtResource("2_camera")
+target = Vector3(0, 1.4, 0)
+distance = 6.0
+min_distance = 1.5
+yaw = 0.5
+pitch = -0.3
+
+[node name="Ground" type="StaticBody3D" parent="."]
+
+[node name="Mesh" type="MeshInstance3D" parent="Ground"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.01, 0)
+mesh = SubResource("PlaneMesh_ground")
+
+[node name="Shape" type="CollisionShape3D" parent="Ground"]
+shape = SubResource("WorldBoundaryShape3D_ground")
+
+[node name="Pool" type="StaticBody3D" parent="."]
+
+[node name="Floor" type="CollisionShape3D" parent="Pool"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.2, 0)
+shape = SubResource("BoxShape3D_floor")
+
+[node name="Mesh" type="MeshInstance3D" parent="Pool/Floor"]
+mesh = SubResource("BoxMesh_floor")
+
+[node name="BankSouth" type="CollisionShape3D" parent="Pool"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.975, 7)
+shape = SubResource("BoxShape3D_bank_ns")
+
+[node name="Mesh" type="MeshInstance3D" parent="Pool/BankSouth"]
+visible = false
+mesh = SubResource("BoxMesh_bank_ns")
+
+[node name="Glass" type="CollisionShape3D" parent="Pool"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.6, 6.125)
+shape = SubResource("BoxShape3D_glass")
+
+[node name="BankEast" type="CollisionShape3D" parent="Pool"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0.975, 0)
+shape = SubResource("BoxShape3D_bank_ew")
+
+[node name="Mesh" type="MeshInstance3D" parent="Pool/BankEast"]
+mesh = SubResource("BoxMesh_bank_ew")
+
+[node name="BankWest" type="CollisionShape3D" parent="Pool"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 0.975, 0)
+shape = SubResource("BoxShape3D_bank_ew")
+
+[node name="Mesh" type="MeshInstance3D" parent="Pool/BankWest"]
+mesh = SubResource("BoxMesh_bank_ew")
+
+[node name="Cliff" type="CollisionShape3D" parent="Pool"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.375, -7)
+shape = SubResource("BoxShape3D_cliff")
+
+[node name="Mesh" type="MeshInstance3D" parent="Pool/Cliff"]
+mesh = SubResource("BoxMesh_cliff")
+
+[node name="Step" type="CollisionShape3D" parent="Pool"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0.175, 2)
+shape = SubResource("BoxShape3D_step")
+
+[node name="Mesh" type="MeshInstance3D" parent="Pool/Step"]
+mesh = SubResource("BoxMesh_step")
+
+[node name="WaterSimCollider" type="Node3D" parent="Pool"]
+script = ExtResource("5_collider")
+
+[node name="WaterSim" parent="." instance=ExtResource("1_box")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.25, 0)
+size = Vector3(16, 7.25, 16)
+max_particles = 1000000
+detail_levels = 2
+max_substeps = 1
+detail_distance = 10.0
+threads = 4
+
+[node name="Fluid" parent="WaterSim" index="0"]
+location = 1
+
+[node name="Fill" type="Node3D" parent="WaterSim"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
+script = ExtResource("6_emitter")
+substance = ExtResource("8_water")
+shape = 0
+size = Vector3(12, 1, 12)
+
+[node name="Spout" type="Node3D" parent="WaterSim"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.65, -5.7)
+script = ExtResource("6_emitter")
+substance = ExtResource("8_water")
+shape = 0
+emitting = true
+flow = 1.225
+size = Vector3(4, 0.5, 0.6)
+velocity = Vector3(0, 0, 2.5)
+
+[node name="Pump" type="Node3D" parent="WaterSim" node_paths=PackedStringArray("inlet")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.55, 4)
+script = ExtResource("7_recycler")
+inlet = NodePath("../Spout")
+rate = 0.03
+recycle_bodies = false
+shape = 0
+size = Vector3(10, 0.6, 3)
+
+[node name="LodView" type="MultiMeshInstance3D" parent="WaterSim"]
+visible = false
+script = ExtResource("12_lod_view")
+
+[node name="Pull" type="Node3D" parent="." node_paths=PackedStringArray("sim", "camera")]
+script = ExtResource("15_pull")
+sim = NodePath("../WaterSim")
+camera = NodePath("../Camera")
+
+[node name="ChoralOnTheBank" parent="." instance=ExtResource("11_choral")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 2, 2.2, 6.6)
+
+[node name="ChoralInTheWater" type="StaticBody3D" parent="."]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -3, 0.6, 2)
+
+[node name="Shape" type="CollisionShape3D" parent="ChoralInTheWater"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+shape = SubResource("CapsuleShape3D_choral")
+
+[node name="Model" parent="ChoralInTheWater" instance=ExtResource("11_choral")]
+
+[node name="WaterSimCollider" type="Node3D" parent="ChoralInTheWater"]
+script = ExtResource("5_collider")
+
+[node name="HUD" parent="." node_paths=PackedStringArray("sim", "pull") instance=ExtResource("hud_scene")]
+sim = NodePath("../WaterSim")
+pull = NodePath("../Pull")

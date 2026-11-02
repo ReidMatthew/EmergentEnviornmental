@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://cjrk22jbren1t"
+path="res://.godot/imported/fluid_thickness.glsl-51d7f5959da1eecaa03f3b9c5ef5faef.res"
+
+[deps]
+
+source_file="res://addons/water_sim/shaders/fluid_thickness.glsl"
+dest_files=["res://.godot/imported/fluid_thickness.glsl-51d7f5959da1eecaa03f3b9c5ef5faef.res"]
+
+[params]
+

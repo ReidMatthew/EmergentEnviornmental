@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://dvvne4x3o3yr4"
+path="res://.godot/imported/fluid_smooth.glsl-d257ea3ee9e1e5babcb277f479eaefaa.res"
+
+[deps]
+
+source_file="res://addons/water_sim/shaders/fluid_smooth.glsl"
+dest_files=["res://.godot/imported/fluid_smooth.glsl-d257ea3ee9e1e5babcb277f479eaefaa.res"]
+
+[params]
+

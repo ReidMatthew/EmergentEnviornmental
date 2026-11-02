@@ -1,0 +1,280 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://addons/water_sim/demo/scenes/tool_sandbox.gd" id="1_sandbox"]
+[ext_resource type="PackedScene" path="res://addons/water_sim/demo/props/box.tscn" id="2_box"]
+[ext_resource type="Script" path="res://addons/water_sim/demo/components/orbit_camera.gd" id="3_camera"]
+[ext_resource type="Material" path="res://addons/water_sim/demo/materials/grass.tres" id="4_grass"]
+[ext_resource type="Resource" path="res://addons/water_sim/substances/water.tres" id="5_water"]
+[ext_resource type="Script" path="res://addons/water_sim/components/emitter.gd" id="6_emitter"]
+[ext_resource type="Script" path="res://addons/water_sim/components/recycler.gd" id="7_recycler"]
+[ext_resource type="Script" path="res://addons/water_sim/tool_kit/tool_belt.gd" id="8_belt"]
+[ext_resource type="Script" path="res://addons/water_sim/tool_kit/tool.gd" id="9_tool"]
+[ext_resource type="Script" path="res://addons/water_sim/tool_kit/stream_tool.gd" id="10_stream_tool"]
+[ext_resource type="Script" path="res://addons/water_sim/components/push.gd" id="11_push"]
+[ext_resource type="Script" path="res://addons/water_sim/components/orb.gd" id="12_orb"]
+[ext_resource type="Script" path="res://addons/water_sim/components/vortex.gd" id="13_vortex"]
+[ext_resource type="Script" path="res://addons/water_sim/components/wind.gd" id="14_wind"]
+[ext_resource type="Script" path="res://addons/water_sim/components/drain.gd" id="15_drain"]
+[ext_resource type="PackedScene" path="res://addons/water_sim/demo/props/tornado.tscn" id="16_tornado"]
+[ext_resource type="PackedScene" path="res://addons/water_sim/demo/ui/demo_hud.tscn" id="17_hud"]
+
+[sub_resource type="Environment" id="Environment_sky"]
+background_mode = 1
+background_color = Color(0.6, 0.78, 0.92, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.55, 0.6, 0.7, 1)
+ambient_light_energy = 0.6
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_ground"]
+material = ExtResource("4_grass")
+size = Vector2(120, 120)
+
+[sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_ground"]
+
+[node name="ToolSandbox" type="Node3D"]
+script = ExtResource("1_sandbox")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_sky")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.81915206, -0.46984634, 0.32898995, 0, 0.57357645, 0.81915206, -0.57357645, -0.6710101, 0.46984634, 0, 0, 0)
+shadow_enabled = true
+
+[node name="Camera" type="Camera3D" parent="."]
+script = ExtResource("3_camera")
+target = Vector3(0, 1.5, 0)
+distance = 30.0
+max_distance = 80.0
+yaw = 0.6
+pitch = -0.5
+
+[node name="Ground" type="StaticBody3D" parent="."]
+
+[node name="Mesh" type="MeshInstance3D" parent="Ground"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.01, 0)
+mesh = SubResource("PlaneMesh_ground")
+
+[node name="Shape" type="CollisionShape3D" parent="Ground"]
+shape = SubResource("WorldBoundaryShape3D_ground")
+
+[node name="WaterSim" parent="." instance=ExtResource("2_box")]
+size = Vector3(20, 14, 20)
+max_particles = 1400000
+detail_levels = 2
+max_substeps = 1
+detail_distance = 10.0
+threads = 8
+
+[node name="Fluid" parent="WaterSim" index="0"]
+location = 1
+
+[node name="Pool" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.375, 0)
+script = ExtResource("6_emitter")
+substance = ExtResource("5_water")
+fill_on_start = true
+shape = 0
+size = Vector3(20, 0.75, 20)
+
+[node name="SummonDrawer" type="Node3D" parent="." node_paths=PackedStringArray("inlet")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 0)
+script = ExtResource("7_recycler")
+inlet = NodePath("../Tools/Summon/Inlet")
+active = false
+rate = 0.03
+recycle_bodies = false
+shape = 0
+size = Vector3(19, 0.3, 19)
+
+[node name="RainDrawer" type="Node3D" parent="." node_paths=PackedStringArray("inlet")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 0)
+script = ExtResource("7_recycler")
+inlet = NodePath("../Tools/Rain/Cloud")
+active = false
+rate = 0.02
+recycle_bodies = false
+shape = 0
+size = Vector3(19, 0.3, 19)
+
+[node name="Tools" type="Node3D" parent="." node_paths=PackedStringArray("camera", "help")]
+script = ExtResource("8_belt")
+camera = NodePath("../Camera")
+help = NodePath("../HUD/Help")
+
+[node name="Pour" type="Node3D" parent="Tools"]
+script = ExtResource("9_tool")
+label = "Pour"
+hint = "hold to pour water from above"
+height = 3.0
+
+[node name="Emitter" type="Node3D" parent="Tools/Pour"]
+script = ExtResource("6_emitter")
+substance = ExtResource("5_water")
+flow = 1.5
+velocity = Vector3(0, -3, 0)
+radius = 0.4
+
+[node name="Blast" type="Node3D" parent="Tools"]
+script = ExtResource("9_tool")
+label = "Blast"
+hint = "click to blow the water away"
+use = 2
+height = 0.5
+pulse_time = 0.35
+
+[node name="Push" type="Node3D" parent="Tools/Blast"]
+script = ExtResource("11_push")
+speed = 9.0
+strength = 20.0
+radius = 2.5
+
+[node name="Gather" type="Node3D" parent="Tools"]
+script = ExtResource("9_tool")
+label = "Gather"
+hint = "hold to draw water up into a ball over the mouse; let go to drop it"
+height = 3.2
+
+[node name="Orb" type="Node3D" parent="Tools/Gather"]
+script = ExtResource("12_orb")
+radius = 1.6
+speed = 5.0
+strength = 8.0
+feed_length = 3.8
+spray = true
+
+[node name="Tornado" type="Node3D" parent="Tools"]
+script = ExtResource("9_tool")
+label = "Tornado"
+hint = "click to start or stop, drag to move"
+use = 1
+height = 3.0
+
+[node name="Tornado" parent="Tools/Tornado" instance=ExtResource("16_tornado")]
+spray = true
+
+[node name="Whirlpool" type="Node3D" parent="Tools"]
+script = ExtResource("9_tool")
+label = "Whirlpool"
+hint = "click to start or stop, drag to move"
+use = 1
+height = -0.2
+
+[node name="Vortex" type="Node3D" parent="Tools/Whirlpool"]
+script = ExtResource("13_vortex")
+swirl_speed = 6.0
+pull_speed = 1.5
+lift_speed = 0.0
+strength = 4.0
+shape = 3
+radius = 3.5
+height = 1.6
+
+[node name="Geyser" type="Node3D" parent="Tools"]
+script = ExtResource("9_tool")
+label = "Geyser"
+hint = "hold to throw a column of water up"
+height = -0.4
+
+[node name="Vortex" type="Node3D" parent="Tools/Geyser"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 0)
+script = ExtResource("13_vortex")
+swirl_speed = 0.0
+pull_speed = 2.0
+lift_speed = 12.0
+strength = 15.0
+falloff = 0.3
+shape = 3
+radius = 0.9
+height = 8.0
+spray = true
+
+[node name="DrawStream" type="Node3D" parent="Tools"]
+script = ExtResource("10_stream_tool")
+
+[node name="Stasis" type="Node3D" parent="Tools"]
+script = ExtResource("9_tool")
+label = "Stasis"
+hint = "click to freeze the water in a sphere (it hangs in the air), click again to let go"
+use = 1
+height = 1.5
+
+[node name="Hold" type="Node3D" parent="Tools/Stasis"]
+script = ExtResource("14_wind")
+speed = 0.0
+strength = 60.0
+falloff = 0.2
+shape = 1
+radius = 2.5
+
+[node name="Jet" type="Node3D" parent="Tools"]
+script = ExtResource("9_tool")
+label = "Water jet"
+hint = "hold to shoot water away from you"
+facing = 2
+height = 1.0
+
+[node name="Emitter" type="Node3D" parent="Tools/Jet"]
+script = ExtResource("6_emitter")
+substance = ExtResource("5_water")
+flow = 0.6
+velocity = Vector3(0, 4, -12)
+radius = 0.25
+
+[node name="Gust" type="Node3D" parent="Tools"]
+script = ExtResource("9_tool")
+label = "Gust"
+hint = "hold to blow the water away from you (waves)"
+facing = 2
+height = 0.6
+
+[node name="Wind" type="Node3D" parent="Tools/Gust"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -2.5)
+script = ExtResource("14_wind")
+speed = 8.0
+strength = 6.0
+shape = 0
+size = Vector3(3, 2, 5)
+
+[node name="Summon" type="Node3D" parent="Tools" node_paths=PackedStringArray("linked")]
+script = ExtResource("9_tool")
+label = "Summon"
+hint = "hold to draw water out of the pool's floor and pour it out at the mouse"
+height = 3.0
+linked = [NodePath("../../SummonDrawer")]
+
+[node name="Inlet" type="Node3D" parent="Tools/Summon"]
+script = ExtResource("6_emitter")
+substance = ExtResource("5_water")
+flow = 0.0
+radius = 0.7
+
+[node name="Vanish" type="Node3D" parent="Tools"]
+script = ExtResource("9_tool")
+label = "Vanish"
+hint = "hold to make the water at the mouse disappear"
+
+[node name="Drain" type="Node3D" parent="Tools/Vanish"]
+script = ExtResource("15_drain")
+active = false
+radius = 1.5
+
+[node name="Rain" type="Node3D" parent="Tools" node_paths=PackedStringArray("linked")]
+script = ExtResource("9_tool")
+label = "Rain"
+hint = "click to start or stop a rain cloud (it rains the pool's own water), drag to move"
+use = 1
+height = 6.0
+linked = [NodePath("../../RainDrawer")]
+
+[node name="Cloud" type="Node3D" parent="Tools/Rain"]
+script = ExtResource("6_emitter")
+substance = ExtResource("5_water")
+flow = 0.0
+velocity = Vector3(0, -3, 0)
+shape = 0
+size = Vector3(5, 0.4, 5)
+
+[node name="HUD" parent="." node_paths=PackedStringArray("sim", "tools") instance=ExtResource("17_hud")]
+sim = NodePath("../WaterSim")
+tools = NodePath("../Tools")

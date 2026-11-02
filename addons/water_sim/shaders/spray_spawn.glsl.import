@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://cfyp30v21ys70"
+path="res://.godot/imported/spray_spawn.glsl-d04bf5be37445328150dcf43c14a3197.res"
+
+[deps]
+
+source_file="res://addons/water_sim/shaders/spray_spawn.glsl"
+dest_files=["res://.godot/imported/spray_spawn.glsl-d04bf5be37445328150dcf43c14a3197.res"]
+
+[params]
+

@@ -1,0 +1,50 @@
+[gd_scene format=3]
+
+[ext_resource type="ArrayMesh" path="res://addons/adaptive_mesh/demo/models/castle.res" id="1_nd6k6"]
+[ext_resource type="Shape3D" path="res://addons/adaptive_mesh/demo/models/castle_shape.res" id="2_c8nop"]
+[ext_resource type="Script" path="res://addons/adaptive_mesh/adaptive_mesh.gd" id="3_nnevb"]
+[ext_resource type="Resource" path="res://addons/adaptive_mesh/demo/models/castle.adaptive.res" id="4_pol8e"]
+[ext_resource type="Script" path="res://addons/adaptive_mesh/chunking/grid_chunking.gd" id="5_egsin"]
+[ext_resource type="Script" path="res://addons/adaptive_mesh/core/mesh_cleanup.gd" id="6_dyica"]
+[ext_resource type="Material" path="res://addons/adaptive_mesh/demo/materials/castle_stone_cut.tres" id="7_3wqnu"]
+[ext_resource type="Script" path="res://addons/adaptive_mesh/pieces/piece_drawing.gd" id="8_hodeb"]
+[ext_resource type="Script" path="res://addons/adaptive_mesh/core/mesh_separation.gd" id="9_53qc8"]
+
+[sub_resource type="Resource" id="Resource_apnpx"]
+script = ExtResource("5_egsin")
+cell_size = Vector3(16, 16, 16)
+offset = Vector3(4.5, 0, 4.5)
+
+[sub_resource type="Resource" id="Resource_hb64d"]
+script = ExtResource("6_dyica")
+min_edge_length = 0.2
+max_error = 0.03
+
+[sub_resource type="Resource" id="Resource_lo83k"]
+script = ExtResource("8_hodeb")
+materials = Array[Material]([null, null, null, null, null, null, null, null, null, null, ExtResource("7_3wqnu")])
+crease_angle = 30.0
+
+[sub_resource type="Resource" id="Resource_w6b5u"]
+script = ExtResource("9_53qc8")
+min_size = 0.12
+density = 2.5
+
+[node name="Castle" type="MeshInstance3D" unique_id=722185130]
+mesh = ExtResource("1_nd6k6")
+
+[node name="Collision" type="StaticBody3D" parent="." unique_id=446139584]
+
+[node name="Shape" type="CollisionShape3D" parent="Collision" unique_id=540611486]
+shape = ExtResource("2_c8nop")
+
+[node name="Adaptive" type="Node3D" parent="." unique_id=640191207 node_paths=PackedStringArray("target")]
+script = ExtResource("3_nnevb")
+data = ExtResource("4_pol8e")
+chunking = SubResource("Resource_apnpx")
+auto_bake = false
+cleanup = SubResource("Resource_hb64d")
+drawing = SubResource("Resource_lo83k")
+separation = SubResource("Resource_w6b5u")
+target = NodePath("..")
+activation = 1

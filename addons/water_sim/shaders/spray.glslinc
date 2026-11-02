@@ -1,0 +1,58 @@
+// What a WaterSimSprayView tells the spray shaders each frame (one uniform buffer, binding 1 in every shader), and the pool.
+layout(set = 0, binding = 1, std140) uniform Params {
+	// The world to the camera's space, the camera's projection and its inverse, the solver's space (where spray is shed) to the world.
+	mat4 view_from_world;
+	mat4 proj;
+	mat4 inv_proj;
+	mat4 world_from_solver;
+	// width, height, 1 / width, 1 / height of the picture.
+	vec4 screen;
+	// Gravity (m/s^2, world), and the frame's time (s).
+	vec4 motion;
+	// How long a spray particle lives (s), how much that varies (a fraction), air drag (1/s), and how far (m) behind the scene's depth
+	// a falling one counts as landed (farther is only hidden).
+	vec4 life;
+	// A particle's radius (m), its opacity, how far it is stretched along its motion (s of travel), the time (s) before it can land.
+	vec4 look;
+	// How far a spawn is scattered from its particle (m), and its velocity (a fraction of its speed, plus w m/s); z: how many spray
+	// particles each one shed makes.
+	vec4 scatter;
+	// Each substance's spray colour.
+	vec4 colors[64];
+} u;
+
+// A spray particle: where it is (world) and its age (s); its velocity (world) and how long it lives (0: dead); its substance and
+// whether it has landed.
+struct Spray {
+	vec4 pos_age;
+	vec4 vel_life;
+	vec4 extra;
+};
+
+// (Read only where it is drawn: a vertex stage may not write.)
+#ifdef SPRAY_READ_ONLY
+layout(set = 0, binding = 0, std430) restrict readonly buffer Pool {
+#else
+layout(set = 0, binding = 0, std430) restrict buffer Pool {
+#endif
+	Spray spray[];
+};
+
+// The spawns taken this frame and where the first goes in the pool (a ring: the oldest are written over).
+layout(push_constant, std430) uniform Push {
+	uint count;
+	uint head;
+	uint capacity;
+	uint seed;
+} pc;
+
+uint spray_hash(uint x) {
+	x = (x ^ (x >> 16)) * 0x7feb352du;
+	x = (x ^ (x >> 15)) * 0x846ca68bu;
+	return x ^ (x >> 16);
+}
+
+float spray_random(inout uint state) {
+	state = spray_hash(state);
+	return float(state >> 8) * (1.0 / 16777216.0);
+}

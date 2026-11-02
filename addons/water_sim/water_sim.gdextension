@@ -1,0 +1,11 @@
+[configuration]
+
+entry_symbol = "water_sim_init"
+compatibility_minimum = "4.5"
+reloadable = false
+
+[libraries]
+
+; One release build serves the editor and games (it has no editor-only parts).
+windows.debug.x86_64 = "bin/water_sim.windows.template_release.x86_64.dll"
+windows.release.x86_64 = "bin/water_sim.windows.template_release.x86_64.dll"

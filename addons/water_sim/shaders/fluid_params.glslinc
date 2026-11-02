@@ -1,0 +1,36 @@
+// What a WaterSimFluidView tells the fluid shaders each frame (one uniform buffer, binding 1 in every shader).
+layout(set = 0, binding = 1, std140) uniform Params {
+	// The solver's space (where the particles are) to the camera's, the camera's projection and its inverse.
+	mat4 view_from_solver;
+	mat4 proj;
+	mat4 inv_proj;
+	// width, height, 1 / width, 1 / height of the picture.
+	vec4 screen;
+	// A particle's radius (m), the farthest distance the depth is kept for (m), how far the depth is smoothed (m), how much
+	// depth difference still counts as the same surface (m).
+	vec4 sizes;
+	// What a particle's chord length counts for (so a full block of particles is as thick as it is), how thick (m) water is
+	// all its deep colour, how thick it takes to be opaque, how far it bends what is behind it.
+	vec4 thickness;
+	// Specular strength, shininess, how strong the reflection of the sky is at a glancing angle, foam.
+	vec4 light;
+	// The direction to the sun in the camera's space and its strength, its colour and in its w, where a particle's point is on its shape
+	// (-1 bottom, 0 centre, 1 top: see ms_anchored), the sky's colour and in its w, the particles' shape (0 sphere, 1 cube, 2 disc,
+	// 3 disc turned to face the camera: see fluid_shape.glslinc).
+	vec4 sun_dir;
+	vec4 sun_color;
+	vec4 sky_color;
+	// The domain's size in metres divided by 65535 (the drawing's positions are 16 bits across it); w is unused.
+	vec4 extent;
+	// How many times smaller the thickness targets are than the picture (a whole number; its fragments' coordinates are scaled up by it),
+	// whether to draw nothing after reading the particle (a test of the vertex stage), the pixels under which particles go to the
+	// compute rasterizer (w is unused).
+	vec4 extra;
+	// The surface waves (see ms_wave): how high (m, 0: none), the longest wave's length (m), the time they have run (s), unused; where
+	// the solver's origin is in x and z of the world, unused twice.
+	vec4 wave;
+	vec4 wave_at;
+	// A substance's colour where the water is deep and where it is shallow.
+	vec4 deep[64];
+	vec4 shallow[64];
+} u;

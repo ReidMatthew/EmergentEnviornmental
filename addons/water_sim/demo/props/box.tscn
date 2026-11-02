@@ -1,0 +1,27 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://addons/water_sim/water_sim.gd" id="1_sim"]
+[ext_resource type="Script" path="res://addons/water_sim/substance.gd" id="2_sub"]
+[ext_resource type="Resource" path="res://addons/water_sim/substances/water.tres" id="3_water"]
+[ext_resource type="Resource" path="res://addons/water_sim/substances/slime.tres" id="4_slime"]
+[ext_resource type="Script" path="res://addons/water_sim/views/particle_view.gd" id="12_particles"]
+[ext_resource type="Script" path="res://addons/water_sim/views/fluid_view.gd" id="20_fluid"]
+[ext_resource type="Script" path="res://addons/water_sim/views/spray_view.gd" id="21_spray"]
+
+[node name="Box" type="Node3D"]
+script = ExtResource("1_sim")
+size = Vector3(10, 8, 10)
+substances = Array[ExtResource("2_sub")]([ExtResource("3_water"), ExtResource("4_slime")])
+max_particles = 90000
+adaptive = true
+threads = 4
+
+[node name="Fluid" type="Node3D" parent="."]
+script = ExtResource("20_fluid")
+
+[node name="Spray" type="Node3D" parent="."]
+script = ExtResource("21_spray")
+
+[node name="Particles" type="MultiMeshInstance3D" parent="."]
+visible = false
+script = ExtResource("12_particles")

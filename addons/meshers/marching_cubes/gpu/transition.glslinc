@@ -1,0 +1,143 @@
+// Transvoxel transition cells shared by the GPU shaders: the same vertices and triangles as
+// MarchingCubesCpuMesher's add_transition (see MesherTransition, TransvoxelTables).
+// Include after common.glslinc. The including shader must first declare:
+//   buffer transition_cases[] (int): TransvoxelTables.cases
+//   buffer transition_data[] (uint): MesherTransition.gpu_data() for this grid
+
+const int TRANSITION_STRIDE = 50;
+const int BIT_SAMPLES[9] = int[9](0, 1, 2, 5, 8, 7, 6, 3, 4);
+
+// One transition face of the grid.
+struct TransitionFace {
+	bool present;
+	int bytes;      // first word of its samples in transition_data
+	int materials;  // first word of its face-layer material ids
+	ivec2 dims;     // samples per row and column, padding included
+	ivec3 axes;     // w (the face's axis), u, v; see MesherTransition.axes
+	int cells_u;
+	int cells_v;
+};
+
+TransitionFace transition_face(int face) {
+	TransitionFace f;
+	int header = face * 4;
+	f.present = transition_data[header] != 0u;
+	f.bytes = int(transition_data[header + 1]);
+	f.materials = int(transition_data[header + 2]);
+	uint d = transition_data[header + 3];
+	f.dims = ivec2(int(d & 0xFFFFu), int(d >> 16));
+	int w = face >> 1;
+	int u = (w + 1) % 3;
+	int v = (w + 2) % 3;
+	f.axes = (face & 1) != 0 ? ivec3(w, v, u) : ivec3(w, u, v);
+	f.cells_u = (f.dims.x - 3) / 2;
+	f.cells_v = (f.dims.y - 3) / 2;
+	return f;
+}
+
+uint transition_byte(int first_word, int index) {
+	return (transition_data[first_word + (index >> 2)] >> uint((index & 3) * 8)) & 0xFFu;
+}
+
+// Sample (i, j) of the face (each from -1) in layer -1, 0 or 1 (below, on, above the face).
+float face_value(TransitionFace f, int i, int j, int layer) {
+	int index = (i + 1) + f.dims.x * ((j + 1) + f.dims.y * (layer + 1));
+	return (float(transition_byte(f.bytes, index)) - params.misc.z) * params.misc.w;
+}
+
+uint face_material(TransitionFace f, int i, int j) {
+	return transition_byte(f.materials, (i + 1) + f.dims.x * (j + 1));
+}
+
+vec3 face_gradient(TransitionFace f, int i, int j) {
+	vec3 g = vec3(0.0);
+	g[f.axes.y] = (face_value(f, i + 1, j, 0) - face_value(f, i - 1, j, 0)) * 0.5;
+	g[f.axes.z] = (face_value(f, i, j + 1, 0) - face_value(f, i, j - 1, 0)) * 0.5;
+	g[f.axes.x] = (face_value(f, i, j, 1) - face_value(f, i, j, -1)) * 0.5;
+	return g;
+}
+
+// Case index of the transition cell whose full-resolution samples start at (i0, j0).
+int transition_case(TransitionFace f, int i0, int j0) {
+	int c = 0;
+	for (int bit = 0; bit < 9; bit++) {
+		int s = BIT_SAMPLES[bit];
+		if (face_value(f, i0 + s % 3, j0 + s / 3, 0) < params.misc.x) {
+			c |= 1 << bit;
+		}
+	}
+	return c;
+}
+
+// The vertex on the full-resolution face edge between cell samples ea and eb, with the
+// boundary faces it lies on (for seam skirts).
+void fine_vertex(TransitionFace f, int face, int i0, int j0, int ea, int eb, out vec3 position, out vec3 normal,
+		out uint material, out int mask) {
+	int ia = i0 + ea % 3;
+	int ja = j0 + ea / 3;
+	int ib = i0 + eb % 3;
+	int jb = j0 + eb / 3;
+	if (ia > ib || ja > jb) {
+		int ti = ia;
+		int tj = ja;
+		ia = ib;
+		ja = jb;
+		ib = ti;
+		jb = tj;
+	}
+	float iso = params.misc.x;
+	float va = face_value(f, ia, ja, 0);
+	float vb = face_value(f, ib, jb, 0);
+	float t = va == vb ? 0.5 : clamp((iso - va) / (vb - va), 0.0, 1.0);
+	vec3 p = vec3(0.0);
+	p[f.axes.x] = float((face & 1) != 0 ? params.cell_end[f.axes.x] : params.cell_begin[f.axes.x]);
+	p[f.axes.y] = float(params.cell_begin[f.axes.y]) + (float(ia) + t * float(ib - ia)) * 0.5;
+	p[f.axes.z] = float(params.cell_begin[f.axes.z]) + (float(ja) + t * float(jb - ja)) * 0.5;
+	position = params.origin.xyz + p * params.origin.w;
+	vec3 n = mix(face_gradient(f, ia, ja), face_gradient(f, ib, jb), t);
+	normal = dot(n, n) > 0.0 ? normalize(n) : vec3(0.0, 1.0, 0.0);
+	material = va < iso ? face_material(f, ia, ja) : face_material(f, ib, jb);
+	mask = 1 << face;
+	bool along_v = jb != ja;
+	if (!along_v && ja == 0) {
+		mask |= 1 << (f.axes.z * 2);
+	} else if (!along_v && ja == 2 * f.cells_v) {
+		mask |= 2 << (f.axes.z * 2);
+	}
+	if (along_v && ia == 0) {
+		mask |= 1 << (f.axes.y * 2);
+	} else if (along_v && ia == 2 * f.cells_u) {
+		mask |= 2 << (f.axes.y * 2);
+	}
+}
+
+// The grid edge (lowest sample and axis) between half-resolution cell corners ca and cb
+// (0-3 for samples 9-C) of the transition cell (cu, cv).
+void coarse_edge(TransitionFace f, int face, int cu, int cv, int ca, int cb, out ivec3 pa, out int axis) {
+	pa = ivec3(0);
+	pa[f.axes.x] = (face & 1) != 0 ? params.cell_end[f.axes.x] : params.cell_begin[f.axes.x];
+	pa[f.axes.y] = params.cell_begin[f.axes.y] + cu + min(ca & 1, cb & 1);
+	pa[f.axes.z] = params.cell_begin[f.axes.z] + cv + min(ca >> 1, cb >> 1);
+	axis = (ca & 1) != (cb & 1) ? f.axes.y : f.axes.z;
+}
+
+// Boundary faces a regular vertex on the grid edge from sample p along axis lies on, after
+// squeezing: one moved off a transition face no longer lies on it (MarchingCubesCpuMesher).
+int regular_face_mask(ivec3 p, int axis) {
+	int mask = 0;
+	for (int f = 0; f < 3; f++) {
+		if (f == axis) {
+			continue;
+		}
+		if (p[f] == params.cell_begin[f]) {
+			mask |= 1 << (f * 2);
+		} else if (p[f] == params.cell_end[f]) {
+			mask |= 1 << (f * 2 + 1);
+		}
+	}
+	int t = transition_faces();
+	if (t != 0 && (mask & t) != 0 && (mask & ~t) == 0) {
+		mask = 0;
+	}
+	return mask;
+}

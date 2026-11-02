@@ -1,0 +1,96 @@
+[gd_scene format=3 uid="uid://pijulq3nnq7s"]
+
+[ext_resource type="PackedScene" uid="uid://d3i6pmmnejim1" path="res://addons/adaptive_mesh/demo/rock.tscn" id="1_7jcyj"]
+[ext_resource type="Script" uid="uid://sk0kfssmxjq4" path="res://addons/adaptive_mesh/demo/components/orbit_camera.gd" id="2_grtfc"]
+[ext_resource type="Script" uid="uid://dyx7vmcptcaj5" path="res://addons/adaptive_mesh/demo/components/dig_tool.gd" id="3_4pbuq"]
+[ext_resource type="Script" uid="uid://stvi8wqscy2v" path="res://addons/adaptive_mesh/shapes/solid_sphere.gd" id="4_gb55c"]
+[ext_resource type="Script" uid="uid://c8jaadp8o1c51" path="res://addons/adaptive_mesh/demo/components/debug_overlay.gd" id="5_bfhds"]
+[ext_resource type="PackedScene" path="res://addons/adaptive_mesh/demo/rigid_rock.tscn" id="6_rigid"]
+
+[sub_resource type="Environment" id="Environment_6f51n"]
+background_mode = 1
+background_color = Color(0.55, 0.7, 0.85, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.45, 0.45, 0.5, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_nd5u2"]
+albedo_color = Color(0.36, 0.55, 0.3, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_wwcv1"]
+material = SubResource("StandardMaterial3D_nd5u2")
+size = Vector2(30, 30)
+
+[sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_g4qo0"]
+
+[sub_resource type="Resource" id="Resource_csupj"]
+script = ExtResource("4_gb55c")
+radius = 0.35
+edge_length = 0.25
+
+[node name="RocksDemo" type="Node3D" unique_id=962418825]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1562241430]
+environment = SubResource("Environment_6f51n")
+
+[node name="Sun" type="DirectionalLight3D" parent="." unique_id=392693594]
+transform = Transform3D(0.87758255, -0.37554693, 0.2980157, 0, 0.62161, 0.7833269, -0.47942555, -0.687434, 0.54551405, 0, 0, 0)
+shadow_enabled = true
+directional_shadow_max_distance = 60.0
+
+[node name="Ground" type="MeshInstance3D" parent="." unique_id=1746549460]
+mesh = SubResource("PlaneMesh_wwcv1")
+
+[node name="Collision" type="StaticBody3D" parent="Ground" unique_id=1318737917]
+
+[node name="Plane" type="CollisionShape3D" parent="Ground/Collision" unique_id=636090435]
+shape = SubResource("WorldBoundaryShape3D_g4qo0")
+
+[node name="Rock1" parent="." unique_id=1943696458 instance=ExtResource("1_7jcyj")]
+transform = Transform3D(2.2928078, 0, 0.70924854, 0, 2.4, 0, -0.70924854, 0, 2.2928078, 0, 0.5376, 0)
+
+[node name="Rock2" parent="." unique_id=1280429904 instance=ExtResource("1_7jcyj")]
+transform = Transform3D(-0.45260537, 0, 1.3248202, 0, 1.4, 0, -1.3248202, 0, -0.45260537, -3.2, 0.3136, 1.4)
+
+[node name="Rock3" parent="." unique_id=418862186 instance=ExtResource("1_7jcyj")]
+transform = Transform3D(-1.1765585, 0, -1.3622445, 0, 1.8, 0, 1.3622445, 0, -1.1765585, 2.8, 0.4032, 1.8)
+
+[node name="Rock4" parent="." unique_id=1019200945 instance=ExtResource("1_7jcyj")]
+transform = Transform3D(-2.742044, 0, 1.6496047, 0, 3.2, 0, -1.6496047, 0, -2.742044, -1.5, 0.7168, -3)
+
+[node name="Rock5" parent="." unique_id=1577305039 instance=ExtResource("1_7jcyj")]
+transform = Transform3D(0.37797767, 0, -0.92581475, 0, 1, 0, 0.92581475, 0, 0.37797767, 3.4, 0.224, -2.6)
+
+[node name="Rock6" parent="." unique_id=1156090651 instance=ExtResource("1_7jcyj")]
+transform = Transform3D(0.497288, 0, 0.62666154, 0, 0.8, 0, -0.62666154, 0, 0.497288, 0.6, 0.1792, 3.4)
+
+[node name="RigidRock1" parent="." instance=ExtResource("6_rigid")]
+transform = Transform3D(0.8, 0, 0.6, 0, 1, 0, -0.6, 0, 0.8, -3.6, 1.2, -1.2)
+
+[node name="RigidRock2" parent="." instance=ExtResource("6_rigid")]
+transform = Transform3D(0.474160, -0.259035, 0.841471, 0.479426, 0.877583, 0.000000, -0.738460, 0.403423, 0.540302, 1.2, 1.6, -0.4)
+
+[node name="RigidRock3" parent="." instance=ExtResource("6_rigid")]
+transform = Transform3D(-0.6, 0, 0.8, 0, 1, 0, -0.8, 0, -0.6, 4.4, 1.2, 0.8)
+
+[node name="Camera" type="Camera3D" parent="." unique_id=1126210844]
+far = 500.0
+script = ExtResource("2_grtfc")
+target = Vector3(0, 0.6, 0)
+distance = 11.0
+min_distance = 3.0
+max_distance = 40.0
+
+[node name="DigTool" type="Node" parent="." unique_id=790950556]
+script = ExtResource("3_4pbuq")
+brush = SubResource("Resource_csupj")
+hold_speed = 1.0
+min_radius = 0.1
+max_radius = 2.0
+cube_size = 0.3
+min_cube_size = 0.05
+max_cube_size = 2.0
+ray_length = 200.0
+
+[node name="DebugOverlay" type="CanvasLayer" parent="." unique_id=16314195 node_paths=PackedStringArray("dig_tool")]
+script = ExtResource("5_bfhds")
+dig_tool = NodePath("../DigTool")

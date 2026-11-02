@@ -1,0 +1,32 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://addons/water_sim/demo/scenes/kot_demo.gd" id="1_demo"]
+[ext_resource type="Script" path="res://addons/water_sim/demo/components/orbit_camera.gd" id="2_orbit"]
+
+[sub_resource type="Environment" id="Environment_sky"]
+background_mode = 1
+background_color = Color(0.6, 0.78, 0.92, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.55, 0.6, 0.7, 1)
+ambient_light_energy = 0.6
+
+[node name="KotDemo" type="Node3D"]
+script = ExtResource("1_demo")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_sky")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.81915206, -0.46984634, 0.32898995, 0, 0.57357645, 0.81915206, -0.57357645, -0.6710101, 0.46984634, 0, 0, 0)
+shadow_enabled = true
+directional_shadow_max_distance = 200.0
+
+[node name="Camera" type="Camera3D" parent="."]
+far = 800.0
+script = ExtResource("2_orbit")
+target = Vector3(0, 1, 0)
+distance = 62.0
+min_distance = 2.0
+max_distance = 300.0
+yaw = 0.5
+pitch = -0.5

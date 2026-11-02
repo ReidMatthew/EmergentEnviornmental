@@ -1,0 +1,49 @@
+[gd_scene format=3 uid="uid://d3i6pmmnejim1"]
+
+[ext_resource type="ArrayMesh" path="res://addons/adaptive_mesh/demo/models/rock.res" id="1_a4it3"]
+[ext_resource type="Script" uid="uid://c7pgfuor5iska" path="res://addons/adaptive_mesh/adaptive_mesh.gd" id="2_85r03"]
+[ext_resource type="Resource" uid="uid://dne1o8ego8b7i" path="res://addons/adaptive_mesh/demo/models/rock.adaptive.res" id="3_6ci1k"]
+[ext_resource type="Script" uid="uid://vk8xt7mxgnag" path="res://addons/adaptive_mesh/pieces/piece_drawing.gd" id="4_gb251"]
+[ext_resource type="Script" path="res://addons/adaptive_mesh/debris/mesh_debris.gd" id="5_debris"]
+[ext_resource type="Script" path="res://addons/adaptive_mesh/core/mesh_separation.gd" id="6_separation"]
+
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_nw6bm"]
+points = PackedVector3Array(0.4367168, -2.0116568e-05, -9.2983246e-05, 0.39860868, 0.19712636, 0.15220574, 0.43356502, -2.0116568e-05, 0.26790085, 0.38838917, -0.19208921, 0.14831594, 0.40567636, -2.0116568e-05, -0.25083226, 0.39574337, 0.19567567, -0.15119481, 0.27406484, 0.35474196, -9.2983246e-05, 0.15916741, 0.33334455, 0.25752816, 0.27377832, 0.13532767, 0.44303933, 0.21523124, -0.10649951, 0.34828898, 0.1538189, -0.28, 0.24885103, 0.22869802, -0.28, -9.2983246e-05, 0.35295534, -0.17453608, -0.1348379, 0.23652977, -0.11701688, -0.38278455, 0.23968154, 0.118499875, -0.38787115, 0.1646114, 0.3448774, -0.266491, -4.6253204e-05, 0.4609312, -9.2983246e-05, -4.6253204e-05, 0.20017275, 0.40483996, -0.13996702, 0.29294333, 0.22631046, -4.6253204e-05, -2.0116568e-05, 0.5394852, -4.6253204e-05, -0.2050002, 0.4145145, -0.15477094, -0.28, 0.2503471, 0.15028507, -0.28, -0.24335197, -4.6253204e-05, -0.20761141, -0.41988677, -4.6253204e-05, -2.0116568e-05, -0.47942987, -4.6253204e-05, 0.20213118, -0.4089157, -0.27692705, 0.1368509, -0.44801265, -0.14359638, 0.30048677, -0.23228113, -0.43480355, 0.2148971, 0.16596946, -0.41054428, 0.20292905, -0.15687981, -0.2470327, 0.31963566, -9.2983246e-05, -0.23662221, 0.11697668, 0.38279805, -0.49449673, -2.0116568e-05, 0.3056015, -0.2552465, -0.12622866, 0.41291872, -0.4415847, -0.2183464, 0.16856262, -0.24808332, -0.28, -9.2983246e-05, -0.13901195, -0.28, -0.22490057, -0.26699412, -0.13203135, -0.4320547, -0.47644553, -2.0116568e-05, -0.29451713, -0.53900397, -2.0116568e-05, -9.2983246e-05, -0.37816668, -0.18701187, -0.14451241)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1ib06"]
+albedo_color = Color(0.45, 0.36, 0.28, 1)
+
+[sub_resource type="Resource" id="Resource_rmbq1"]
+script = ExtResource("4_gb251")
+materials = Array[Material]([null, SubResource("StandardMaterial3D_1ib06"), null, null, null, null, null, null, null, null, SubResource("StandardMaterial3D_1ib06")])
+crease_angle = 0.0
+
+[sub_resource type="Resource" id="Resource_debris"]
+script = ExtResource("5_debris")
+fragment_size = 0.15
+min_size = 0.03
+density = 2.5
+scatter_speed = 0.8
+layer = 4
+mask = 5
+
+[sub_resource type="Resource" id="Resource_separation"]
+script = ExtResource("6_separation")
+min_size = 0.03
+density = 2.5
+
+[node name="Rock" type="MeshInstance3D" unique_id=1943696458]
+mesh = ExtResource("1_a4it3")
+
+[node name="Collision" type="StaticBody3D" parent="." unique_id=855246812]
+
+[node name="Hull" type="CollisionShape3D" parent="Collision" unique_id=764131704]
+shape = SubResource("ConvexPolygonShape3D_nw6bm")
+
+[node name="Adaptive" type="Node3D" parent="." unique_id=455238945 node_paths=PackedStringArray("target")]
+script = ExtResource("2_85r03")
+data = ExtResource("3_6ci1k")
+drawing = SubResource("Resource_rmbq1")
+debris = SubResource("Resource_debris")
+separation = SubResource("Resource_separation")
+target = NodePath("..")

@@ -1,0 +1,35 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://addons/water_sim/components/vortex.gd" id="1_v8u8q"]
+[ext_resource type="Script" path="res://addons/water_sim/demo/components/spin.gd" id="2_ien7b"]
+[ext_resource type="Material" path="res://addons/water_sim/demo/materials/funnel.tres" id="3_0ph3k"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_laeeh"]
+material = ExtResource("3_0ph3k")
+top_radius = 2.4
+bottom_radius = 0.35
+height = 6.0
+radial_segments = 24
+rings = 1
+cap_top = false
+cap_bottom = false
+
+[node name="Tornado" type="Node3D" unique_id=82043270]
+script = ExtResource("1_v8u8q")
+swirl_speed = 16.0
+pull_speed = 5.0
+lift_speed = 9.0
+enabled = false
+strength = 10.0
+falloff = 0.35
+shape = 3
+radius = 2.2
+height = 6.0
+
+[node name="Funnel" type="Node3D" parent="." unique_id=2061354518]
+script = ExtResource("2_ien7b")
+speed = 5.0
+
+[node name="Cone" type="MeshInstance3D" parent="Funnel" unique_id=1246963704]
+cast_shadow = 0
+mesh = SubResource("CylinderMesh_laeeh")

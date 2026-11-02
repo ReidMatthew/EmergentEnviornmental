@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://dwv6dsjrsamny"
+path="res://.godot/imported/fluid_opaque_shade.glsl-5fa20a373bd95e77e117dd06fd4310d9.res"
+
+[deps]
+
+source_file="res://addons/water_sim/shaders/fluid_opaque_shade.glsl"
+dest_files=["res://.godot/imported/fluid_opaque_shade.glsl-5fa20a373bd95e77e117dd06fd4310d9.res"]
+
+[params]
+

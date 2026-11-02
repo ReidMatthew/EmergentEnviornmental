@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="WaterSimSubstance" format=3]
+
+[ext_resource type="Script" path="res://addons/water_sim/substance.gd" id="1_sub"]
+
+[resource]
+script = ExtResource("1_sub")
+density = 1000.0
+viscosity = 0.0
+settles_as = 1
+color = Color(0.2, 0.5, 0.95, 1)
+shallow_color = Color(0.34, 0.8, 0.62, 1)

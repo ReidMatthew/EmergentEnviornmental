@@ -1,0 +1,380 @@
+[gd_scene format=3 uid="uid://cdd0eyrdc4owx"]
+
+[ext_resource type="Resource" path="res://addons/water_sim/substances/water.tres" id="8_rkxah"]
+[ext_resource type="Script" uid="uid://ci46iosq3q6fj" path="res://addons/water_sim/components/emitter.gd" id="13_2rx8f"]
+[ext_resource type="Script" uid="uid://ir1lnx6dgt3u" path="res://addons/water_sim/demo/components/tool_belt.gd" id="21_8py5i"]
+[ext_resource type="Script" uid="uid://bo4fm24lyhvty" path="res://addons/water_sim/demo/components/brush_tool.gd" id="22_jhba2"]
+[ext_resource type="PackedScene" path="res://addons/water_sim/demo/props/tornado.tscn" id="24_hja5m"]
+[ext_resource type="Script" uid="uid://fiwcd8a8h7wp" path="res://addons/water_sim/components/push.gd" id="26_67ncd"]
+[ext_resource type="Script" uid="uid://duvlgyy3bvjtb" path="res://addons/water_sim/demo/components/transmute_tool.gd" id="28_ftw05"]
+[ext_resource type="Resource" path="res://addons/water_sim/substances/slime.tres" id="44_slime"]
+[ext_resource type="PackedScene" path="res://addons/water_sim/demo/props/box.tscn" id="wf_box"]
+[ext_resource type="Script" uid="uid://bsvjnghjbpurf" path="res://addons/water_sim/components/collider.gd" id="wf_collider"]
+[ext_resource type="Material" path="res://addons/water_sim/demo/materials/grass.tres" id="wf_grass"]
+[ext_resource type="Script" uid="uid://dn3bjkp46m4xb" path="res://addons/water_sim/demo/components/orbit_camera.gd" id="wf_orbit"]
+[ext_resource type="Script" uid="uid://cu7wq87imeou0" path="res://addons/water_sim/components/recycler.gd" id="wf_recycler"]
+[ext_resource type="PackedScene" path="res://addons/water_sim/demo/props/rock.tscn" id="wf_rock"]
+[ext_resource type="Material" path="res://addons/water_sim/demo/materials/stone.tres" id="wf_stone"]
+[ext_resource type="PackedScene" path="res://addons/water_sim/demo/ui/demo_hud.tscn" id="hud_scene"]
+
+
+
+[sub_resource type="Environment" id="Environment_esiog"]
+background_mode = 1
+background_color = Color(0.6, 0.78, 0.92, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.55, 0.6, 0.7, 1)
+ambient_light_energy = 0.6
+
+[sub_resource type="PlaneMesh" id="wf_plane"]
+material = ExtResource("wf_grass")
+size = Vector2(80, 80)
+
+[sub_resource type="WorldBoundaryShape3D" id="wf_boundary"]
+
+[sub_resource type="BoxShape3D" id="wf_shape_0"]
+size = Vector3(9.25, 16.5, 5.8)
+
+[sub_resource type="BoxMesh" id="wf_mesh_0"]
+material = ExtResource("wf_stone")
+size = Vector3(9.25, 16.5, 5.8)
+
+[sub_resource type="BoxShape3D" id="wf_shape_1"]
+size = Vector3(19.6, 6, 5.8)
+
+[sub_resource type="BoxMesh" id="wf_mesh_1"]
+material = ExtResource("wf_stone")
+size = Vector3(19.6, 6, 5.8)
+
+[sub_resource type="BoxShape3D" id="wf_shape_2"]
+size = Vector3(9.5, 4, 5.8)
+
+[sub_resource type="BoxMesh" id="wf_mesh_2"]
+material = ExtResource("wf_stone")
+size = Vector3(9.5, 4, 5.8)
+
+[sub_resource type="BoxShape3D" id="wf_shape_5"]
+size = Vector3(1, 1.5, 5.2)
+
+[sub_resource type="BoxMesh" id="wf_mesh_5"]
+material = ExtResource("wf_stone")
+size = Vector3(1, 1.5, 5.2)
+
+[sub_resource type="BoxShape3D" id="wf_shape_6"]
+size = Vector3(0.5, 4, 5.8)
+
+[sub_resource type="BoxMesh" id="wf_mesh_6"]
+material = ExtResource("wf_stone")
+size = Vector3(0.5, 4, 5.8)
+
+[sub_resource type="BoxShape3D" id="wf_shape_7"]
+size = Vector3(9.75, 4, 0.5)
+
+[sub_resource type="BoxMesh" id="wf_mesh_7"]
+material = ExtResource("wf_stone")
+size = Vector3(9.75, 4, 0.5)
+
+[sub_resource type="BoxShape3D" id="wf_shape_8"]
+size = Vector3(19.6, 4, 0.5)
+
+[sub_resource type="BoxMesh" id="wf_mesh_8"]
+material = ExtResource("wf_stone")
+size = Vector3(19.6, 6.5879517, 0.5)
+
+[sub_resource type="BoxShape3D" id="wf_shape_9"]
+size = Vector3(10, 4, 0.5)
+
+[sub_resource type="BoxMesh" id="wf_mesh_9"]
+material = ExtResource("wf_stone")
+size = Vector3(10, 4, 0.5)
+
+[sub_resource type="BoxShape3D" id="wf_shape_10"]
+size = Vector3(6.75, 5, 0.5)
+
+[sub_resource type="BoxMesh" id="wf_mesh_10"]
+material = ExtResource("wf_stone")
+size = Vector3(6.75, 5, 0.5)
+
+[sub_resource type="BoxShape3D" id="wf_shape_11"]
+size = Vector3(9.75, 4, 0.5)
+
+[sub_resource type="BoxMesh" id="wf_mesh_11"]
+material = ExtResource("wf_stone")
+size = Vector3(9.75, 4, 0.5)
+
+[sub_resource type="BoxShape3D" id="wf_shape_12"]
+size = Vector3(19.6, 4, 0.5)
+
+[sub_resource type="BoxMesh" id="wf_mesh_12"]
+material = ExtResource("wf_stone")
+size = Vector3(19.6, 4, 0.5)
+
+[sub_resource type="BoxShape3D" id="wf_shape_13"]
+size = Vector3(10, 4, 0.5)
+
+[sub_resource type="BoxMesh" id="wf_mesh_13"]
+material = ExtResource("wf_stone")
+size = Vector3(10, 4, 0.5)
+
+[sub_resource type="BoxShape3D" id="wf_shape_14"]
+size = Vector3(6.75, 5, 0.5)
+
+[sub_resource type="BoxMesh" id="wf_mesh_14"]
+material = ExtResource("wf_stone")
+size = Vector3(6.75, 5, 0.5)
+
+[node name="WaterfallDemo" type="Node3D" unique_id=1663181869]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=223237207]
+environment = SubResource("Environment_esiog")
+
+[node name="Sun" type="DirectionalLight3D" parent="." unique_id=1441680761]
+transform = Transform3D(0.81915206, -0.46984634, 0.32898995, 0, 0.57357645, 0.81915206, -0.57357645, -0.6710101, 0.46984634, 0, 0, 0)
+shadow_enabled = true
+
+[node name="Camera" type="Camera3D" parent="." unique_id=540225944]
+script = ExtResource("wf_orbit")
+target = Vector3(3.5, 8, 0)
+distance = 48.0
+yaw = 0.35
+pitch = -0.4
+
+[node name="Ground" type="StaticBody3D" parent="." unique_id=1619217642]
+
+[node name="Mesh" type="MeshInstance3D" parent="Ground" unique_id=540430817]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.01, 0)
+mesh = SubResource("wf_plane")
+
+[node name="Shape" type="CollisionShape3D" parent="Ground" unique_id=1707267396]
+shape = SubResource("wf_boundary")
+
+[node name="Terraces" type="StaticBody3D" parent="." unique_id=1559344407]
+
+[node name="WaterSimCollider" type="Node3D" parent="Terraces" unique_id=1841978420]
+script = ExtResource("wf_collider")
+
+[node name="Block1" type="CollisionShape3D" parent="Terraces" unique_id=852697450]
+transform = Transform3D(0.9993908, 0.0348995, 0, -0.0348995, 0.9993908, 0, 0, 0, 1, -12.125, 5.25, 0)
+shape = SubResource("wf_shape_0")
+
+[node name="Mesh" type="MeshInstance3D" parent="Terraces/Block1" unique_id=475212137]
+mesh = SubResource("wf_mesh_0")
+
+[node name="Block2" type="CollisionShape3D" parent="Terraces" unique_id=1864412041]
+transform = Transform3D(0.9993908, 0.0348995, 0, -0.0348995, 0.9993908, 0, 0, 0, 1, 0.524073, 2.18022, 0)
+shape = SubResource("wf_shape_1")
+
+[node name="Mesh" type="MeshInstance3D" parent="Terraces/Block2" unique_id=489882539]
+transform = Transform3D(1, 0, 0, 0, 0.99990255, 0.01396218, 0, -0.01396218, 0.99990255, 0, 0, 0)
+mesh = SubResource("wf_mesh_1")
+
+[node name="Block3" type="CollisionShape3D" parent="Terraces" unique_id=858646764]
+transform = Transform3D(0.9993908, 0.0348995, 0, -0.0348995, 0.9993908, 0, 0, 0, 1, 14.75, -1, 0)
+shape = SubResource("wf_shape_2")
+
+[node name="Mesh" type="MeshInstance3D" parent="Terraces/Block3" unique_id=2065145664]
+mesh = SubResource("wf_mesh_2")
+
+[node name="Dam3" type="CollisionShape3D" parent="Terraces" unique_id=214500977]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.5, 0.95, 0)
+shape = SubResource("wf_shape_5")
+
+[node name="Mesh" type="MeshInstance3D" parent="Terraces/Dam3" unique_id=613506423]
+mesh = SubResource("wf_mesh_5")
+
+[node name="Back1" type="CollisionShape3D" parent="Terraces" unique_id=321094358]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16.5, 14.5, 0)
+shape = SubResource("wf_shape_6")
+
+[node name="Mesh" type="MeshInstance3D" parent="Terraces/Back1" unique_id=857883568]
+mesh = SubResource("wf_mesh_6")
+
+[node name="Wall1Left" type="CollisionShape3D" parent="Terraces" unique_id=938738246]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.875, 14.5, -2.65)
+shape = SubResource("wf_shape_7")
+
+[node name="Mesh" type="MeshInstance3D" parent="Terraces/Wall1Left" unique_id=1801163837]
+mesh = SubResource("wf_mesh_7")
+
+[node name="Wall2Left" type="CollisionShape3D" parent="Terraces" unique_id=2076750031]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.37079, 6.12143, -2.65)
+shape = SubResource("wf_shape_8")
+
+[node name="Mesh" type="MeshInstance3D" parent="Terraces/Wall2Left" unique_id=49376263]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0059583187, 0.06819296, 0)
+mesh = SubResource("wf_mesh_8")
+
+[node name="Wall3Left" type="CollisionShape3D" parent="Terraces" unique_id=1771046288]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 2, -2.65)
+shape = SubResource("wf_shape_9")
+
+[node name="Mesh" type="MeshInstance3D" parent="Terraces/Wall3Left" unique_id=1862768675]
+mesh = SubResource("wf_mesh_9")
+
+[node name="WallSumpLeft" type="CollisionShape3D" parent="Terraces" unique_id=1817356695]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22.375, 0.5, -2.65)
+shape = SubResource("wf_shape_10")
+
+[node name="Mesh" type="MeshInstance3D" parent="Terraces/WallSumpLeft" unique_id=2046807385]
+mesh = SubResource("wf_mesh_10")
+
+[node name="Wall1Right" type="CollisionShape3D" parent="Terraces" unique_id=471444024]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.875, 14.5, 2.65)
+shape = SubResource("wf_shape_11")
+
+[node name="Mesh" type="MeshInstance3D" parent="Terraces/Wall1Right" unique_id=2052311869]
+visible = false
+mesh = SubResource("wf_mesh_11")
+
+[node name="Wall2Right" type="CollisionShape3D" parent="Terraces" unique_id=1136776814]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.37079, 6.12143, 2.65)
+shape = SubResource("wf_shape_12")
+
+[node name="Mesh" type="MeshInstance3D" parent="Terraces/Wall2Right" unique_id=976204911]
+visible = false
+mesh = SubResource("wf_mesh_12")
+
+[node name="Wall3Right" type="CollisionShape3D" parent="Terraces" unique_id=309306995]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 2, 2.65)
+shape = SubResource("wf_shape_13")
+
+[node name="Mesh" type="MeshInstance3D" parent="Terraces/Wall3Right" unique_id=553825122]
+visible = false
+mesh = SubResource("wf_mesh_13")
+
+[node name="WallSumpRight" type="CollisionShape3D" parent="Terraces" unique_id=558841530]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22.375, 0.5, 2.65)
+shape = SubResource("wf_shape_14")
+
+[node name="Mesh" type="MeshInstance3D" parent="Terraces/WallSumpRight" unique_id=1010475653]
+visible = false
+mesh = SubResource("wf_mesh_14")
+
+[node name="WaterSim" parent="." unique_id=1967370436 instance=ExtResource("wf_box")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, 0, 0)
+size = Vector3(43, 18, 10)
+max_particles = 1000000
+detail_levels = 2
+max_substeps = 1
+detail_distance = 10.0
+threads = 4
+
+[node name="Fluid" parent="WaterSim" index="0"]
+location = 1
+
+[node name="Fill" type="Node3D" parent="." unique_id=1088470233]
+
+[node name="Pool1" type="Node3D" parent="Fill" unique_id=1463177587]
+transform = Transform3D(0.9993908, 0.0348995, 0, -0.0348995, 0.9993908, 0, 0, 0, 1, -11.8, 13.975, 0)
+script = ExtResource("13_2rx8f")
+substance = ExtResource("8_rkxah")
+fill_on_start = true
+shape = 0
+size = Vector3(8.4, 0.95, 4.5)
+
+[node name="Pool2" type="Node3D" parent="Fill" unique_id=2087822738]
+transform = Transform3D(0.9993908, 0.0348995, 0, -0.0348995, 0.9993908, 0, 0, 0, 1, 1.67152, 5.66956, 0)
+script = ExtResource("13_2rx8f")
+substance = ExtResource("8_rkxah")
+fill_on_start = true
+shape = 0
+size = Vector3(17.3, 0.8, 4.5)
+
+[node name="Pool3" type="Node3D" parent="Fill" unique_id=1209623619]
+transform = Transform3D(0.9993908, 0.0348995, 0, -0.0348995, 0.9993908, 0, 0, 0, 1, 14.95, 1.475, 0)
+script = ExtResource("13_2rx8f")
+substance = ExtResource("8_rkxah")
+fill_on_start = true
+shape = 0
+size = Vector3(8.1, 0.95, 4.5)
+
+[node name="Inlet" type="Node3D" parent="." unique_id=540711603]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15.6, 16.8, 0)
+script = ExtResource("13_2rx8f")
+substance = ExtResource("8_rkxah")
+shape = 0
+size = Vector3(0.5, 0.5, 3.6)
+
+[node name="Sump" type="Node3D" parent="." unique_id=2075631839 node_paths=PackedStringArray("inlet")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24.7, 0.7, 0)
+script = ExtResource("wf_recycler")
+inlet = NodePath("../Inlet")
+shape = 0
+size = Vector3(1.8, 1.2, 4.8)
+
+[node name="Pump" type="Node3D" parent="." unique_id=1102962560 node_paths=PackedStringArray("inlet")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 1.5, 0)
+script = ExtResource("wf_recycler")
+inlet = NodePath("../Inlet")
+rate = 0.04
+recycle_bodies = false
+shape = 0
+size = Vector3(7.5, 1, 4.35)
+
+[node name="Rocks" type="Node3D" parent="." unique_id=511586032]
+
+[node name="Rock1" parent="Rocks" unique_id=211757572 instance=ExtResource("wf_rock")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0.9, 4.2)
+
+[node name="Rock2" parent="Rocks" unique_id=1531247155 instance=ExtResource("wf_rock")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 0.9, -4.2)
+
+[node name="HUD" parent="." node_paths=PackedStringArray("sim") instance=ExtResource("hud_scene")]
+sim = NodePath("../WaterSim")
+
+[node name="Tools" type="Node3D" parent="." unique_id=1486941024 node_paths=PackedStringArray("help", "camera")]
+script = ExtResource("21_8py5i")
+help = NodePath("../HUD/Help")
+camera = NodePath("../Camera")
+
+[node name="PourWater" type="Node3D" parent="Tools" unique_id=714602354]
+script = ExtResource("22_jhba2")
+label = "Pour water"
+hint = "hold to pour from above"
+height = 3.0
+
+[node name="Emitter" type="Node3D" parent="Tools/PourWater" unique_id=832752234]
+script = ExtResource("13_2rx8f")
+substance = ExtResource("8_rkxah")
+flow = 1.2
+velocity = Vector3(0, -3, 0)
+radius = 0.35
+
+[node name="Tornado" type="Node3D" parent="Tools" unique_id=993447853]
+script = ExtResource("22_jhba2")
+toggle = true
+label = "Tornado"
+hint = "click to start or stop, drag to move"
+height = 3.0
+
+[node name="Tornado" parent="Tools/Tornado" unique_id=82043270 instance=ExtResource("24_hja5m")]
+
+[node name="Blast" type="Node3D" parent="Tools" unique_id=991419104]
+script = ExtResource("22_jhba2")
+label = "Blast"
+hint = "hold to push everything away"
+height = 0.5
+
+[node name="Push" type="Node3D" parent="Tools/Blast" unique_id=2112194968]
+script = ExtResource("26_67ncd")
+speed = 9.0
+strength = 20.0
+radius = 2.5
+
+[node name="PourSlime" type="Node3D" parent="Tools" unique_id=1951246707]
+script = ExtResource("22_jhba2")
+label = "Pour slime"
+hint = "hold to pour from above"
+height = 3.0
+
+[node name="Emitter" type="Node3D" parent="Tools/PourSlime" unique_id=2130102669]
+script = ExtResource("13_2rx8f")
+substance = ExtResource("44_slime")
+flow = 0.6
+velocity = Vector3(0, -3, 0)
+radius = 0.3
+
+[node name="Transmute" type="Node3D" parent="Tools" unique_id=1144932629]
+script = ExtResource("28_ftw05")
+label = "Rock to water"
+hint = "click a rock"

@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://ddr2rbc8wco32"
+path="res://.godot/imported/fluid_raster.glsl-d9c3cab2e901d0a29f0913d9abd76fc4.res"
+
+[deps]
+
+source_file="res://addons/water_sim/shaders/fluid_raster.glsl"
+dest_files=["res://.godot/imported/fluid_raster.glsl-d9c3cab2e901d0a29f0913d9abd76fc4.res"]
+
+[params]
+

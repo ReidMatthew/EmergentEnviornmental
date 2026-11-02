@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://umgfbhcj8d7t"
+path="res://.godot/imported/fluid_depth.glsl-07c65e716362cd0b5d71e8171f9bf86b.res"
+
+[deps]
+
+source_file="res://addons/water_sim/shaders/fluid_depth.glsl"
+dest_files=["res://.godot/imported/fluid_depth.glsl-07c65e716362cd0b5d71e8171f9bf86b.res"]
+
+[params]
+

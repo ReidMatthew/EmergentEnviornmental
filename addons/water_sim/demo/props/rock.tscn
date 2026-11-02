@@ -1,0 +1,32 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://addons/water_sim/demo/materials/stone.tres" id="1_5fp1f"]
+[ext_resource type="Script" path="res://addons/water_sim/components/collider.gd" id="2_tuxp1"]
+[ext_resource type="Script" path="res://addons/water_sim/components/transmuter.gd" id="3_7b555"]
+[ext_resource type="Resource" path="res://addons/water_sim/substances/water.tres" id="5_uierd"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_pjryp"]
+material = ExtResource("1_5fp1f")
+radius = 1.0
+height = 2.0
+radial_segments = 9
+rings = 5
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_0ne61"]
+radius = 0.95
+
+[node name="Rock" type="StaticBody3D" unique_id=1208834884]
+
+[node name="Mesh" type="MeshInstance3D" parent="." unique_id=672624591]
+transform = Transform3D(1.1, 0, 0, 0, 0.85, 0, 0, 0, 1, 0, 0, 0)
+mesh = SubResource("SphereMesh_pjryp")
+
+[node name="Shape" type="CollisionShape3D" parent="." unique_id=1508171635]
+shape = SubResource("SphereShape3D_0ne61")
+
+[node name="WaterSimCollider" type="Node3D" parent="." unique_id=2046801823]
+script = ExtResource("2_tuxp1")
+
+[node name="WaterSimTransmuter" type="Node3D" parent="." unique_id=1006566826]
+script = ExtResource("3_7b555")
+substance = ExtResource("5_uierd")

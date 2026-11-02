@@ -1,0 +1,13 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://addons/water_sim/shaders/toon_water.gdshader" id="1_ex2a1"]
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_ex2a1")
+shader_parameter/color = null
+shader_parameter/shadow = null
+shader_parameter/bands = null
+shader_parameter/rim_color = null
+shader_parameter/rim_width = null
+shader_parameter/highlight_size = null

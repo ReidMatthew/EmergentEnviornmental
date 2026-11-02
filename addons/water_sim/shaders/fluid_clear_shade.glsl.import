@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://ytw6kcq5afwf"
+path="res://.godot/imported/fluid_clear_shade.glsl-f78c2b8ff278087b0e28db27f537a3eb.res"
+
+[deps]
+
+source_file="res://addons/water_sim/shaders/fluid_clear_shade.glsl"
+dest_files=["res://.godot/imported/fluid_clear_shade.glsl-f78c2b8ff278087b0e28db27f537a3eb.res"]
+
+[params]
+

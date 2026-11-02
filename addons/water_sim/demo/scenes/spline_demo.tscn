@@ -1,0 +1,65 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://addons/water_sim/demo/scenes/spline_demo.gd" id="1_demo"]
+[ext_resource type="PackedScene" path="res://addons/water_sim/demo/props/box.tscn" id="2_box"]
+[ext_resource type="Script" path="res://addons/water_sim/demo/components/orbit_camera.gd" id="3_camera"]
+[ext_resource type="Script" path="res://addons/water_sim/components/stream.gd" id="4_stream"]
+[ext_resource type="Script" path="res://addons/water_sim/components/emitter.gd" id="5_emitter"]
+[ext_resource type="Resource" path="res://addons/water_sim/substances/water.tres" id="6_water"]
+[ext_resource type="Material" path="res://addons/water_sim/demo/materials/grass.tres" id="7_grass"]
+[ext_resource type="PackedScene" path="res://addons/water_sim/demo/ui/demo_hud.tscn" id="8_hud"]
+
+[sub_resource type="Environment" id="Environment_sky"]
+background_mode = 1
+background_color = Color(0.6, 0.78, 0.92, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.55, 0.6, 0.7, 1)
+ambient_light_energy = 0.6
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_ground"]
+material = ExtResource("7_grass")
+size = Vector2(80, 80)
+
+[node name="Spline" type="Node3D"]
+script = ExtResource("1_demo")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_sky")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.81915206, -0.46984634, 0.32898995, 0, 0.57357645, 0.81915206, -0.57357645, -0.6710101, 0.46984634, 0, 0, 0)
+shadow_enabled = true
+
+[node name="Camera" type="Camera3D" parent="."]
+script = ExtResource("3_camera")
+target = Vector3(0, 4.5, 0)
+distance = 20.0
+pitch = -0.3
+
+[node name="Ground" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.01, 0)
+mesh = SubResource("PlaneMesh_ground")
+
+[node name="WaterSim" parent="." instance=ExtResource("2_box")]
+size = Vector3(12, 14, 12)
+max_particles = 150000
+cell_size = 0.25
+max_substeps = 1
+threads = 4
+
+[node name="Fluid" parent="WaterSim" index="0"]
+location = 1
+
+[node name="Pool" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
+script = ExtResource("5_emitter")
+substance = ExtResource("6_water")
+fill_on_start = true
+shape = 0
+size = Vector3(9, 0.9, 9)
+
+[node name="Stream" type="Node3D" parent="."]
+script = ExtResource("4_stream")
+
+[node name="HUD" parent="." node_paths=PackedStringArray("sim") instance=ExtResource("8_hud")]
+sim = NodePath("../WaterSim")

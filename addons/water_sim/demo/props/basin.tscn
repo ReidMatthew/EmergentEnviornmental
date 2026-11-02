@@ -1,0 +1,79 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://addons/water_sim/demo/materials/stone.tres" id="1_g3aiw"]
+[ext_resource type="Script" path="res://addons/water_sim/components/collider.gd" id="2_eyo4f"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_ysb0q"]
+material = ExtResource("1_g3aiw")
+size = Vector3(14, 0.4, 14)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_xgyhb"]
+size = Vector3(14, 0.4, 14)
+
+[sub_resource type="BoxMesh" id="BoxMesh_gatfp"]
+material = ExtResource("1_g3aiw")
+size = Vector3(14, 1.8, 0.5)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_xmkfk"]
+size = Vector3(14, 1.8, 0.5)
+
+[sub_resource type="BoxMesh" id="BoxMesh_blypb"]
+material = ExtResource("1_g3aiw")
+size = Vector3(14, 1.8, 0.5)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_epwvy"]
+size = Vector3(14, 1.8, 0.5)
+
+[sub_resource type="BoxMesh" id="BoxMesh_iet33"]
+material = ExtResource("1_g3aiw")
+size = Vector3(0.5, 1.8, 13)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_6d1h7"]
+size = Vector3(0.5, 1.8, 13)
+
+[sub_resource type="BoxMesh" id="BoxMesh_nfwki"]
+material = ExtResource("1_g3aiw")
+size = Vector3(0.5, 1.8, 13)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_kdhof"]
+size = Vector3(0.5, 1.8, 13)
+
+[node name="Basin" type="StaticBody3D" unique_id=1376928775]
+
+[node name="Floor" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
+shape = SubResource("BoxShape3D_xgyhb")
+
+[node name="Mesh" type="MeshInstance3D" parent="Floor"]
+mesh = SubResource("BoxMesh_ysb0q")
+
+[node name="WallNorth" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, -6.75)
+shape = SubResource("BoxShape3D_xmkfk")
+
+[node name="Mesh" type="MeshInstance3D" parent="WallNorth"]
+mesh = SubResource("BoxMesh_gatfp")
+
+[node name="WallSouth" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 6.75)
+shape = SubResource("BoxShape3D_epwvy")
+
+[node name="Mesh" type="MeshInstance3D" parent="WallSouth"]
+mesh = SubResource("BoxMesh_blypb")
+
+[node name="WallEast" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.75, 0.9, 0)
+shape = SubResource("BoxShape3D_6d1h7")
+
+[node name="Mesh" type="MeshInstance3D" parent="WallEast"]
+mesh = SubResource("BoxMesh_iet33")
+
+[node name="WallWest" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.75, 0.9, 0)
+shape = SubResource("BoxShape3D_kdhof")
+
+[node name="Mesh" type="MeshInstance3D" parent="WallWest"]
+mesh = SubResource("BoxMesh_nfwki")
+
+[node name="WaterSimCollider" type="Node3D" parent="." unique_id=1134745153]
+script = ExtResource("2_eyo4f")

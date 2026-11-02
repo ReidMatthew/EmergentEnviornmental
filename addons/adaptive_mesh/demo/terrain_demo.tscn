@@ -1,0 +1,109 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://addons/adaptive_mesh/adaptive_mesh.gd" id="1_imu73"]
+[ext_resource type="Resource" path="res://addons/adaptive_mesh/demo/models/low_poly_terrain.adaptive.res" id="2_1hjx6"]
+[ext_resource type="PackedScene" path="res://addons/adaptive_mesh/demo/models/low_poly_terrain.glb" id="3_tldm7"]
+[ext_resource type="Script" path="res://addons/adaptive_mesh/sources/node_source.gd" id="4_imu73"]
+[ext_resource type="Script" path="res://addons/adaptive_mesh/chunking/grid_chunking.gd" id="5_xpou8"]
+[ext_resource type="Script" path="res://addons/adaptive_mesh/core/mesh_cleanup.gd" id="6_k6oou"]
+[ext_resource type="Script" path="res://addons/adaptive_mesh/pieces/piece_drawing.gd" id="7_gqg8f"]
+[ext_resource type="Script" path="res://addons/adaptive_mesh/demo/components/orbit_camera.gd" id="8_vhtmh"]
+[ext_resource type="Script" path="res://addons/adaptive_mesh/demo/components/dig_tool.gd" id="9_q86ty"]
+[ext_resource type="Script" path="res://addons/adaptive_mesh/shapes/solid_sphere.gd" id="10_1xo0r"]
+[ext_resource type="Script" path="res://addons/adaptive_mesh/demo/components/debug_overlay.gd" id="11_f7hfg"]
+[ext_resource type="Script" path="res://addons/adaptive_mesh/core/mesh_separation.gd" id="12_separation"]
+
+[sub_resource type="Environment" id="Environment_8h86n"]
+background_mode = 1
+background_color = Color(0.55, 0.7, 0.85, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.45, 0.45, 0.5, 1)
+
+[sub_resource type="Resource" id="Resource_1hjx6"]
+script = ExtResource("4_imu73")
+skip_prefixes = PackedStringArray("UCX_", "UBX_", "UCP_", "USP_")
+merge_tolerance = 0.02
+close_to_floor = true
+floor_depth = 40.0
+
+[sub_resource type="Resource" id="Resource_qbqur"]
+script = ExtResource("5_xpou8")
+cell_size = Vector3(25, 0, 25)
+
+[sub_resource type="Resource" id="Resource_7rfmb"]
+script = ExtResource("6_k6oou")
+min_edge_length = 1.1
+max_error = 0.25
+unlock_rings = 1
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_xalj7"]
+albedo_color = Color(0.6267, 0.6267, 0.6267, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_awk11"]
+albedo_color = Color(0.6824, 0.4275, 0.2157, 1)
+
+[sub_resource type="Resource" id="Resource_sqbm4"]
+script = ExtResource("7_gqg8f")
+materials = Array[Material]([null, null, null, null, SubResource("StandardMaterial3D_xalj7"), null, null, null, null, null, SubResource("StandardMaterial3D_awk11")])
+crease_angle = 0.0
+
+[sub_resource type="Resource" id="Resource_separation"]
+script = ExtResource("12_separation")
+anchor_margin = 0.5
+min_size = 1.0
+density = 2.0
+
+[sub_resource type="Resource" id="Resource_nvx44"]
+script = ExtResource("10_1xo0r")
+radius = 12.5
+edge_length = 3.81
+tag = 10
+
+[node name="TerrainDemo" type="Node3D" unique_id=343787619]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=676792904]
+environment = SubResource("Environment_8h86n")
+
+[node name="Sun" type="DirectionalLight3D" parent="." unique_id=289408237]
+transform = Transform3D(0.87758255, -0.37554693, 0.2980157, 0, 0.62161, 0.7833269, -0.47942555, -0.687434, 0.54551405, 0, 0, 0)
+shadow_enabled = true
+directional_shadow_max_distance = 800.0
+
+[node name="Terrain" parent="." unique_id=1319080457 instance=ExtResource("3_tldm7")]
+
+[node name="Adaptive" type="Node3D" parent="." unique_id=777127372 node_paths=PackedStringArray("target")]
+script = ExtResource("1_imu73")
+data = ExtResource("2_1hjx6")
+source = SubResource("Resource_1hjx6")
+chunking = SubResource("Resource_qbqur")
+max_bounds = AABB(-100, -55, -100, 200, 103, 200)
+cleanup = SubResource("Resource_7rfmb")
+drawing = SubResource("Resource_sqbm4")
+separation = SubResource("Resource_separation")
+target = NodePath("../Terrain")
+activation = 1
+
+[node name="Camera" type="Camera3D" parent="." unique_id=1284219346]
+transform = Transform3D(0.8253356, -0.31882113, 0.46601957, 0, 0.8253356, 0.5646425, -0.5646425, -0.46601957, 0.68117887, 93.20391, 126.67473, 136.23578)
+current = true
+far = 32000.0
+script = ExtResource("8_vhtmh")
+target = Vector3(0, 13.746227, 0)
+distance = 200.0
+min_distance = 40.0
+max_distance = 650.0
+
+[node name="DigTool" type="Node" parent="." unique_id=1484879931]
+script = ExtResource("9_q86ty")
+brush = SubResource("Resource_nvx44")
+hold_speed = 25.0
+min_radius = 2.5
+max_radius = 50.0
+cube_size = 10.0
+min_cube_size = 1.0
+max_cube_size = 60.0
+ray_length = 4000.0
+
+[node name="DebugOverlay" type="CanvasLayer" parent="." unique_id=1755167540 node_paths=PackedStringArray("dig_tool")]
+script = ExtResource("11_f7hfg")
+dig_tool = NodePath("../DigTool")

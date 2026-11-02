@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://c1su3xvpuf6hm"
+path="res://.godot/imported/polygonize.glsl-ef9adc111db3f4d484254ffafcf44494.res"
+
+[deps]
+
+source_file="res://addons/meshers/marching_cubes/gpu/polygonize.glsl"
+dest_files=["res://.godot/imported/polygonize.glsl-ef9adc111db3f4d484254ffafcf44494.res"]
+
+[params]
+

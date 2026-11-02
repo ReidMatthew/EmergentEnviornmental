@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://b6cqsv1cb576m"
+path="res://.godot/imported/fluid_opaque_scene_depth.glsl-efd122dffe338de2f391acf5b1ada081.res"
+
+[deps]
+
+source_file="res://addons/water_sim/shaders/fluid_opaque_scene_depth.glsl"
+dest_files=["res://.godot/imported/fluid_opaque_scene_depth.glsl-efd122dffe338de2f391acf5b1ada081.res"]
+
+[params]
+

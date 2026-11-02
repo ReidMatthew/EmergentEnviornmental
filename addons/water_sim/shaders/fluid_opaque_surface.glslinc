@@ -1,0 +1,58 @@
+// The opaque look's surface at a pixel of the picture, from the smoothed depth at half size (its particles are drawn at half size). A
+// pixel has water if the half-size texels round it that have water make up at least half of its bilinear weights (so an edge is about
+// where the two-pixel steps' average is, not on them), and its depth is that of those on the surface of the nearest one by weight.
+// Needs u and smooth_depth (nearest); with OPAQUE_TARGETS, near_big and near_small.
+
+// Depth at pixel p (a fraction of the far limit); false: no water. s: the four texels (x, y: the lower row), f: the pixel among them.
+bool opaque_depth(ivec2 p, out vec4 s, out vec2 f, out float depth) {
+	vec2 at = (vec2(p) + 0.5) * 0.5 - 0.5;
+	vec2 base = floor(at);
+	f = at - base;
+	s = textureGather(smooth_depth, (base + 1.0) / vec2(textureSize(smooth_depth, 0)), 0).wzxy;
+	vec4 has = vec4(lessThan(s, vec4(0.9999)));
+	vec4 b = vec4((1.0 - f.x) * (1.0 - f.y), f.x * (1.0 - f.y), (1.0 - f.x) * f.y, f.x * f.y) * has;
+	depth = 1.0;
+	if (b.x + b.y + b.z + b.w < 0.5) {
+		return false;
+	}
+	float top = max(max(b.x, b.y), max(b.z, b.w));
+	float nearest = b.x == top ? s.x : (b.y == top ? s.y : (b.z == top ? s.z : s.w));
+	float sigma_d = u.sizes.w / u.sizes.y;
+	vec4 dd = s - nearest;
+	vec4 w = b * exp(dd * dd * (-0.5 / (sigma_d * sigma_d)));
+	depth = dot(w, s) / (w.x + w.y + w.z + w.w);
+	return true;
+}
+
+vec3 view_position(vec2 uv, float distance_m) {
+	vec4 h = u.inv_proj * vec4(uv * 2.0 - 1.0, 1.0, 1.0);
+	vec3 ray = h.xyz / h.w;
+	return ray * (-distance_m / ray.z);
+}
+
+// The surface's normal in view space, from the slope across the four texels (the ones off this surface count as level with it).
+vec3 opaque_normal(vec2 uv, vec3 here, float depth, vec4 s, vec2 f) {
+	bvec4 on = lessThan(abs(s - depth) * u.sizes.y, vec4(u.sizes.w * 1.5));
+	vec4 l = mix(vec4(depth), s, vec4(on));
+	float slope_x = ((l.y - l.x) * (1.0 - f.y) + (l.w - l.z) * f.y) * u.sizes.y * 0.5;
+	float slope_y = ((l.z - l.x) * (1.0 - f.x) + (l.w - l.y) * f.x) * u.sizes.y * 0.5;
+	float z = depth * u.sizes.y;
+	vec3 n = normalize(cross(view_position(uv + vec2(u.screen.z, 0.0), z + slope_x) - here, view_position(uv + vec2(0.0, u.screen.w), z + slope_y) - here));
+	return n.z < 0.0 ? -n : n;
+}
+
+// The depth and substance of the half-size targets' nearest particle, of the four texels round the pixel the first with water.
+#ifdef OPAQUE_TARGETS
+int opaque_substance(ivec2 p) {
+	ivec2 half_size = textureSize(near_big, 0);
+	ivec2 base = ivec2(floor((vec2(p) + 0.5) * 0.5 - 0.5));
+	uint v = 0u;
+	for (int i = 0; i < 4 && v == 0u; i++) {
+		ivec2 q = clamp(base + ivec2(i & 1, i >> 1), ivec2(0), half_size - 1);
+		float d = texelFetch(near_big, q, 0).r;
+		// (As fluid_resolve.glsl: the near pass's depth carries the substance in its low mantissa bits.)
+		v = max(d >= 0.9999 ? 0u : ~((uint(d * 16777215.0) << 8) | ((floatBitsToUint(d) >> 4) & 63u)), imageLoad(near_small, q).r);
+	}
+	return int((~v) & 63u);
+}
+#endif

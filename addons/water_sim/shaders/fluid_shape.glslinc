@@ -1,0 +1,135 @@
+// The shape each particle is drawn as (u.sky_color.w: 0 a sphere, 1 a cube, 2 a disc, 3 a disc facing the camera: see
+// ms_face_camera), each with a sphere's volume. A cube's sides
+// run along the solver's axes. A disc is a sphere flattened to a fifth along its axis (radii 1.71, 1.71 and 0.342 of the sphere's),
+// its axis up, tipping over with the water's vertical speed (the solver's 13-bit code; see CullPlanes::orient); code 0 is a sphere. Needs fluid_params.glslinc.
+
+const float MS_DISC_WIDE = 1.7099759; // 5^(1/3): a fifth as thick, as much water.
+const float MS_DISC_FLAT = 0.2;
+const float MS_CUBE_HALF = 0.8059960; // (pi / 6)^(1/3)
+
+float ms_shape() {
+	return u.sky_color.w;
+}
+
+// A disc's axis in the solver's space from the particle's point (zero: round): a 13-bit code, 1-127 in the word's bits 6-7 and 10-14
+// (0: round) and, times 127, the lowest two bits of x, y and z.
+vec3 ms_disc_axis(uvec2 q) {
+	if (ms_shape() < 1.5) {
+		return vec3(0.0);
+	}
+	int packed = int(q.y >> 16);
+	int low = ((packed >> 6) & 3) | (((packed >> 10) & 31) << 2);
+	if (low == 0) {
+		return vec3(0.0);
+	}
+	int high = int(q.x & 3u) | (int((q.x >> 16) & 3u) << 2) | (int(q.y & 3u) << 4);
+	int code = high * 127 + low - 1;
+	// A 90 x 90 grid over the square the upper half of the sphere was flattened onto (the octahedral map, turned 45 degrees).
+	float su = float(code % 90) / 44.5 - 1.0;
+	float sv = float(code / 90) / 44.5 - 1.0;
+	float px = 0.5 * (su + sv), pz = 0.5 * (su - sv);
+	return normalize(vec3(px, max(1.0 - abs(px) - abs(pz), 0.0), pz));
+}
+
+// With shape 3, a disc's axis (solver space) turned about the vertical toward the camera from place, as upright as it was.
+vec3 ms_face_camera(vec3 axis, vec3 place) {
+	if (ms_shape() < 2.5 || dot(axis, axis) == 0.0) {
+		return axis;
+	}
+	mat3 rot = mat3(u.view_from_solver);
+	vec3 eye = -(transpose(rot) * u.view_from_solver[3].xyz);
+	vec2 to_eye = eye.xz - place.xz;
+	float len = length(to_eye);
+	if (len < 1e-4) {
+		return axis;
+	}
+	float side = sqrt(max(1.0 - axis.y * axis.y, 0.0));
+	return vec3(to_eye.x / len * side, axis.y, to_eye.y / len * side);
+}
+
+// A particle's radius from its word: by its detail level.
+float ms_radius(int packed) {
+	return u.sizes.x * float(1 << ((packed >> 8) & 3));
+}
+
+// How far the surface waves lift a point: waves of gravity, each shorter than the last and bent by those before it so nothing repeats.
+// Only the drawing moves: the simulation never sees them, and water asleep still shows them. WaterSim.surface_wave_at is this for the game.
+const vec2 MS_WAVE_DIR[5] = vec2[](vec2(0.7648, 0.6442), vec2(-0.9991, 0.0416), vec2(0.7087, -0.7055), vec2(-0.0492, 0.9988), vec2(-0.637, -0.771));
+
+float ms_wave(vec3 place) {
+	if (u.wave.x <= 0.0) {
+		return 0.0;
+	}
+	vec2 p = place.xz + u.wave_at.xy;
+	float len = u.wave.y, amp = 1.0, sum = 0.0, total = 0.0;
+	for (int i = 0; i < 5; i++) {
+		float k = 6.2831853 / len;
+		float phase = dot(MS_WAVE_DIR[i], p) * k + sqrt(9.8 * k) * u.wave.z + float(i) * 1.7;
+		sum += amp * sin(phase);
+		total += amp;
+		p += MS_WAVE_DIR[i] * cos(phase) * amp * len * 0.04;
+		amp *= 0.62;
+		len *= 0.62;
+	}
+	return u.wave.x * sum / total;
+}
+
+// Where a particle of radius r is drawn, in the solver's space: centred on its point (u.sun_color.w 0), or on the bottom (-1) or the
+// top (1) of the particle, a radius down or up, and lifted by the surface waves.
+vec3 ms_anchored(vec3 place, float r) {
+	return place + vec3(0.0, u.sun_color.w * r + ms_wave(place), 0.0);
+}
+
+// How far from its centre the particle reaches (the half-width of the square it is drawn on).
+float ms_bound(float r, vec3 axis) {
+	if (ms_shape() > 1.5) {
+		return dot(axis, axis) > 0.0 ? r * MS_DISC_WIDE : r;
+	}
+	if (ms_shape() > 0.5) {
+		return r * MS_CUBE_HALF * 1.7320508;
+	}
+	return r;
+}
+
+// Where the ray through a pixel of the particle's square (uv from -1 to 1 across it) goes into and out of the particle, as distances
+// from the particle's centre along the view (more: farther); false if it misses. axis: a disc's, in the camera's space.
+bool ms_hit(vec2 uv, float r, vec3 axis, out float enter, out float leave) {
+	enter = 0.0;
+	leave = 0.0;
+	if (ms_shape() > 1.5 && dot(axis, axis) > 0.0) {
+		// |p|^2 / a^2 + (1 / c^2 - 1 / a^2) (p.axis)^2 = 1 along p = o + s d.
+		vec3 o = vec3(uv * r * MS_DISC_WIDE, 0.0);
+		float a = r * MS_DISC_WIDE, c = a * MS_DISC_FLAT;
+		float k = 1.0 / (c * c) - 1.0 / (a * a);
+		float on = dot(o, axis), dn = -axis.z;
+		float qa = 1.0 / (a * a) + k * dn * dn, qb = 2.0 * k * on * dn, qc = dot(o, o) / (a * a) + k * on * on - 1.0;
+		float disc = qb * qb - 4.0 * qa * qc;
+		if (disc < 0.0) {
+			return false;
+		}
+		float root = sqrt(disc);
+		enter = (-qb - root) / (2.0 * qa);
+		leave = (-qb + root) / (2.0 * qa);
+		return true;
+	}
+	if (ms_shape() > 0.5 && ms_shape() < 1.5) {
+		// The ray in the cube's own frame (the solver's axes), against its six sides.
+		float h = r * MS_CUBE_HALF;
+		mat3 to_cube = transpose(mat3(u.view_from_solver));
+		vec3 o = to_cube * vec3(uv * h * 1.7320508, 0.0);
+		vec3 d = to_cube * vec3(0.0, 0.0, -1.0);
+		vec3 safe = vec3(abs(d.x) < 1e-6 ? 1e-6 : d.x, abs(d.y) < 1e-6 ? 1e-6 : d.y, abs(d.z) < 1e-6 ? 1e-6 : d.z);
+		vec3 t0 = (vec3(-h) - o) / safe, t1 = (vec3(h) - o) / safe;
+		vec3 near = min(t0, t1), far = max(t0, t1);
+		enter = max(max(near.x, near.y), near.z);
+		leave = min(min(far.x, far.y), far.z);
+		return enter <= leave;
+	}
+	float d2 = dot(uv, uv);
+	if (d2 > 1.0) {
+		return false;
+	}
+	leave = sqrt(1.0 - d2) * r;
+	enter = -leave;
+	return true;
+}
